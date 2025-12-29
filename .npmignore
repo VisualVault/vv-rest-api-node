@@ -1,0 +1,43 @@
+# Development files
+.git/
+.vscode/
+.idea/
+node_modules/
+*.log
+
+# Build artifacts
+.DS_Store
+Thumbs.db
+
+# Test files
+test/
+tests/
+spec/
+
+# Development configuration
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# IDE files
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
