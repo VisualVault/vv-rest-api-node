@@ -5,20 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2025-12-29
+## [2.0.0-beta.0] - 2025-01-25
 
 ### Changed
 - **BREAKING**: Extracted API wrapper into standalone NPM package
+- Package published as `@visualvault/vv-rest-api-node`
+- Converted to ES modules with CommonJS compatibility
 - Removed server/microservice dependencies (Express, EJS, body-parser, multer, etc.)
 - Streamlined package to focus solely on REST API client functionality
-- Updated package name to `visualvault-api` for clarity
 - Reduced dependency footprint for better performance and security
 
 ### Added
+- ES module support with CommonJS fallback
 - TypeScript definitions for better IDE support
 - Comprehensive documentation in README
-- LICENSE file (ISC)
+- MIT License
 - Proper .npmignore to reduce package size
+- Vitest test framework
 
 ### Removed
 - Express server components (app.js, routes/, views/, public/)

@@ -26,6 +26,7 @@ ResourceUri:
   FilesId: /files/{id}
   FormTemplates: /formtemplates
   FormTemplatesImport: /formtemplates/{id}/import
+  FormTemplatesRelease: /formtemplates/{id}/release
   Forms: /formtemplates/{id}/forms
   FormId: /formtemplates/{id}/forms/{formId}
   FormIdPdf: /formtemplates/{id}/forms/{formId}/pdf

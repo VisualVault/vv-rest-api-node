@@ -1,0 +1,31 @@
+{
+  "name": "VisualVault API Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "vitest.vitest-runner"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  "forwardPorts": [],
+
+  "postCreateCommand": "npm install",
+
+  "remoteUser": "node",
+
+  "mounts": [
+    "source=${localEnv:USERPROFILE}${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,consistency=cached"
+  ]
+}

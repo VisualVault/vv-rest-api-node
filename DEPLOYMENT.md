@@ -1,34 +1,32 @@
 # Deployment Guide
 
-This guide covers the steps needed to publish the `visualvault-api` package to NPM.
+This guide covers the steps needed to publish the `@visualvault/vv-rest-api-node` package to NPM.
 
 ## Prerequisites
 
-1. NPM account with access to publish under the VisualVault organization
-2. Git repository created on GitHub: https://github.com/VisualVault/visualvault-api
+1. NPM account with access to publish under the `@visualvault` organization
+2. Git repository created on GitHub: https://github.com/VisualVault/vv-rest-api-node
 
 ## Pre-Deployment Checklist
 
-- [ ] All tests pass (add tests as needed)
+- [ ] All tests pass (`npm test`)
 - [ ] Version number updated in package.json
 - [ ] CHANGELOG.md updated with new version
 - [ ] README.md is accurate and up-to-date
-- [ ] TypeScript definitions are correct
 - [ ] Dependencies are up-to-date and secure
 - [ ] No sensitive information in code or config files
 
 ## GitHub Repository Setup
 
 1. Create a new repository on GitHub:
-   ```bash
-   # Repository name: visualvault-api
-   # Description: Node.js client library for the VisualVault REST API
+   ```
+   Repository name: vv-rest-api-node
+   Description: Node.js client library for the VisualVault REST API
    ```
 
 2. Add the remote and push:
    ```bash
-   cd visualvault-api-npm
-   git remote add origin https://github.com/VisualVault/visualvault-api.git
+   git remote add origin https://github.com/VisualVault/vv-rest-api-node.git
    git branch -M main
    git push -u origin main
    ```
@@ -60,7 +58,7 @@ This guide covers the steps needed to publish the `visualvault-api` package to N
 
 4. Test installation from the tarball:
    ```bash
-   npm install ./visualvault-api-2.0.0.tgz
+   npm install ./visualvault-vv-rest-api-node-2.0.0.tgz
    ```
 
 ### Publishing Process
@@ -70,9 +68,9 @@ This guide covers the steps needed to publish the `visualvault-api` package to N
    git status
    ```
 
-2. Run pre-publish checks:
+2. Build the package:
    ```bash
-   npm run prepublishOnly
+   npm run build
    ```
 
 3. Publish to NPM:
@@ -86,7 +84,7 @@ This guide covers the steps needed to publish the `visualvault-api` package to N
 
 4. Verify the package on NPM:
    ```bash
-   npm view visualvault-api
+   npm view @visualvault/vv-rest-api-node
    ```
 
 5. Create a Git tag for the release:
@@ -111,7 +109,7 @@ This guide covers the steps needed to publish the `visualvault-api` package to N
 
 3. Test installation:
    ```bash
-   npm install visualvault-api
+   npm install @visualvault/vv-rest-api-node
    ```
 
 4. Announce the release:
@@ -133,10 +131,10 @@ If you need to unpublish a version:
 
 ```bash
 # Unpublish a specific version (within 72 hours)
-npm unpublish visualvault-api@2.0.0
+npm unpublish @visualvault/vv-rest-api-node@2.0.0
 
 # Deprecate a version (preferred over unpublishing)
-npm deprecate visualvault-api@2.0.0 "Please upgrade to 2.0.1"
+npm deprecate @visualvault/vv-rest-api-node@2.0.0 "Please upgrade to 2.0.1"
 ```
 
 ## Maintenance

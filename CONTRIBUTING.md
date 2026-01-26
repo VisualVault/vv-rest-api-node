@@ -1,4 +1,4 @@
-# Contributing to visualvault-api
+# Contributing to @visualvault/vv-rest-api-node
 
 Thank you for your interest in contributing to the VisualVault API client library!
 
@@ -6,8 +6,8 @@ Thank you for your interest in contributing to the VisualVault API client librar
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/VisualVault/visualvault-api.git
-cd visualvault-api
+git clone https://github.com/VisualVault/vv-rest-api-node.git
+cd vv-rest-api-node
 ```
 
 2. Install dependencies:
@@ -15,37 +15,37 @@ cd visualvault-api
 npm install
 ```
 
-## Project Structure
-
-```
-visualvault-api/
-├── lib/               # Main library code
-│   ├── VVRestApi.js   # Main client
-│   ├── common.js      # HTTP helpers
-│   ├── config.yml     # API endpoint configurations
-│   ├── DocApi.js      # Document API
-│   ├── FormsApi.js    # Forms API
-│   ├── ObjectsApi.js  # Objects API
-│   ├── StudioApi.js   # Studio API
-│   └── NotificationsApi.js  # Notifications API
-├── types/             # TypeScript definitions
-└── README.md          # Documentation
+3. Build the project:
+```bash
+npm run build
 ```
 
 ## Code Style
 
-- Use consistent indentation (spaces, not tabs)
-- Follow existing code patterns and conventions
-- Add comments for complex logic
-- Keep functions focused and modular
+- Follow existing code patterns, conventions, and style guides
 
 ## Testing
 
+This project uses [Vitest](https://vitest.dev/) for testing.
+Please update the tests to reflect your code changes.
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode (during development)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+```
+
 Before submitting changes:
 
-1. Test your changes thoroughly
-2. Ensure backward compatibility when possible
-3. Update documentation if adding new features
+1. Ensure all tests pass: `npm test`
+2. Maintain or improve test coverage: `npm run test:coverage`
+3. Ensure backward compatibility when possible
+4. Update documentation if adding new features
 
 ## Pull Request Process
 
@@ -78,4 +78,4 @@ If you have questions, please open an issue on GitHub.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the ISC License.
+By contributing, you agree that your contributions will be licensed under the MIT License.

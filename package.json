@@ -1,13 +1,24 @@
 {
-  "name": "visualvault-api",
-  "version": "2.0.0",
-  "description": "A Node.js client library for the VisualVault REST API",
+  "name": "@visualvault/vv-rest-api-node",
+  "version": "2.0.0-beta.0",
+  "description": "A Node.js client library for the VisualVault APIs",
   "type": "module",
-  "main": "lib/VVRestApi.js",
-  "types": "types/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./lib/VVRestApi.js",
-    "./vvRestApi/*": "./lib/vvRestApi/*.js"
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./constants": {
+      "import": "./dist/constants.js",
+      "require": "./dist/constants.cjs"
+    },
+    "./VVRestApi": {
+      "import": "./dist/VVRestApi.js",
+      "require": "./dist/VVRestApi.cjs"
+    }
   },
   "keywords": [
     "visualvault",
@@ -23,14 +34,17 @@
     "node": ">=20.0.0"
   },
   "files": [
-    "lib/**/*",
-    "types/**/*",
+    "dist/**/*",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublishOnly": "echo \"Ready to publish VVRestApi library\""
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "debug": "^4.3.7",
@@ -38,12 +52,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/VisualVault/visualvault-api.git"
+    "url": "git+https://github.com/VisualVault/vv-rest-api-node.git"
   },
   "author": "VisualVault",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/VisualVault/visualvault-api/issues"
+    "url": "https://github.com/VisualVault/vv-rest-api-node/issues"
   },
-  "homepage": "https://github.com/VisualVault/visualvault-api#readme"
+  "homepage": "https://github.com/VisualVault/vv-rest-api-node#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.6.1",
+    "@vitest/ui": "^1.6.1",
+    "dotenv": "^17.2.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1"
+  }
 }

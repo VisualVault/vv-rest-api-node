@@ -1,11 +1,13 @@
-# visualvault-api
+# vv-rest-api-node
+
+![Stability: Beta](https://img.shields.io/badge/stability-beta-yellow.svg)
 
 A Node.js client library that provides convenient access to the VisualVault REST API for server-side applications.
 
 ## Installation
 
 ```bash
-npm install visualvault-api
+npm install @visualvault/vv-rest-api-node
 ```
 
 ## Requirements
@@ -17,7 +19,11 @@ npm install visualvault-api
 ### Basic Authentication and Setup
 
 ```javascript
-const vvRestApi = require('visualvault-api');
+// ES Modules (recommended)
+import vvRestApi from '@visualvault/vv-rest-api-node';
+
+// CommonJS
+const vvRestApi = require('@visualvault/vv-rest-api-node');
 
 // Initialize authentication
 const auth = new vvRestApi.authorize();
@@ -60,150 +66,20 @@ auth.getVaultApiFromJwt(
 });
 ```
 
-## API Usage Examples
+## API Usage
 
-### Working with Documents
-
-```javascript
-// Get documents from a folder
-client.library.getDocuments(params, folderId)
-    .then(response => {
-        const documents = JSON.parse(response);
-        console.log('Documents:', documents.data);
-    });
-
-// Upload a new document
-const documentData = {
-    fileName: 'example.pdf',
-    description: 'Example document',
-    folderId: 'your-folder-id'
-};
-
-client.documents.postDocWithFile(documentData, fileBuffer)
-    .then(response => {
-        console.log('Document uploaded:', response);
-    });
-
-// Get document details
-client.documents.getDocumentRevision(params, revisionId)
-    .then(response => {
-        const document = JSON.parse(response);
-        console.log('Document details:', document);
-    });
-```
-
-### Working with Forms
+Once authenticated, the client provides access to various API modules. All methods return Promises.
 
 ```javascript
-// Get forms by template name
+// Example: Get forms by template name
 client.forms.getForms(params, 'Your Form Template Name')
     .then(response => {
         const forms = JSON.parse(response);
         console.log('Forms:', forms.data);
     });
 
-// Create a new form instance
-const formData = {
-    field1: 'value1',
-    field2: 'value2'
-};
-
-client.forms.postForms(params, formData, 'Your Form Template Name')
-    .then(response => {
-        console.log('Form created:', response);
-    });
-
-// Get form instance by ID
-client.forms.getFormInstanceById(templateId, instanceId)
-    .then(response => {
-        const form = JSON.parse(response);
-        console.log('Form instance:', form);
-    });
-```
-
-### Working with Folders
-
-```javascript
-// Get folders
-client.library.getFolders(params)
-    .then(response => {
-        const folders = JSON.parse(response);
-        console.log('Folders:', folders.data);
-    });
-
-// Create a new folder
-const folderData = {
-    name: 'New Folder',
-    description: 'Folder description'
-};
-
-client.library.postFolderByPath(params, folderData, '/Parent Folder/New Folder')
-    .then(response => {
-        console.log('Folder created:', response);
-    });
-```
-
-### Working with Users
-
-```javascript
-// Get current user information
-client.users.getUser(params)
-    .then(response => {
-        const user = JSON.parse(response);
-        console.log('Current user:', user);
-    });
-
-// Get users in a site
-client.users.getUsers(params, siteId)
-    .then(response => {
-        const users = JSON.parse(response);
-        console.log('Users:', users.data);
-    });
-```
-
-### Running Custom Queries
-
-```javascript
-// Execute a custom query by name
-client.customQuery.getCustomQueryResultsByName('Your Query Name', params)
-    .then(response => {
-        const results = JSON.parse(response);
-        console.log('Query results:', results.data);
-    });
-```
-
-### Working with Files
-
-```javascript
-// Upload a file
-const fileData = {
-    fileName: 'document.pdf',
-    description: 'My document'
-};
-
-client.files.postFile(fileData, fileBuffer)
-    .then(response => {
-        console.log('File uploaded:', response);
-    });
-
-// Download a file
-client.files.getFileBytesId(fileId)
-    .then(fileBuffer => {
-        // Process the file buffer
-        console.log('File downloaded, size:', fileBuffer.length);
-    });
-```
-
-### Running Web Services
-
-```javascript
-// Execute a web service
-const serviceData = {
-    param1: 'value1',
-    param2: 'value2'
-};
-
-client.scripts.runWebService('YourWebServiceName', serviceData)
+// Example: Execute a web service
+client.scripts.runWebService('YourWebServiceName', { param1: 'value1' })
     .then(response => {
         console.log('Web service result:', response);
     });
@@ -265,8 +141,8 @@ For more information about the VisualVault API, visit the [VisualVault documenta
 
 ## License
 
-Use of the VisualVault API requires a customer hosting contract which defines all license terms.
+This project is licensed under the [MIT License](LICENSE).
 
-## Repository
+## Contributing
 
-[GitHub Repository](https://github.com/VisualVault/visualvault-api)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.

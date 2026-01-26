@@ -37,8 +37,3 @@ Thumbs.db
 # Coverage
 coverage/
 .nyc_output/
-
-# Test files
-test/
-tests/
-spec/
