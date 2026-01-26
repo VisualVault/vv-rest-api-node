@@ -1,6 +1,11 @@
 # Contributing to @visualvault/vv-rest-api-node
 
-Thank you for your interest in contributing to the VisualVault API client library!
+## Contribution Model
+
+This project is primarily maintained by the VisualVault team and contributions are generally driven by internal product and platform needs. That said, we welcome third-party issues, feedback, and pull requests from external contributors.
+
+Please note that acceptance and timing of external contributions are at the discretion of the VisualVault team and may depend on alignment with our roadmap, priorities, and support commitments.
+
 
 ## Development Setup
 
