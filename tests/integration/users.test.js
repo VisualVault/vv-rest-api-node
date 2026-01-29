@@ -165,7 +165,6 @@ describeIf(canRunIntegrationTests())('UsersManager Integration Tests', () => {
 
   describe('postUsers / putUsers', () => {
     it.skip('should create and update a user', async () => {
-      // SKIPPED Server returns 404 - needs server configuration investigation
       // This test creates real users - enable only when needed
       // Users cannot be deleted via API, so use sparingly
       expect(testSiteId, 'testSiteId should be set in beforeAll').toBeDefined();
@@ -175,7 +174,7 @@ describeIf(canRunIntegrationTests())('UsersManager Integration Tests', () => {
         firstname: 'Test',
         lastname: 'User',
         emailaddress: `testuser_${Date.now()}@example.com`,
-        password: 'TestPassword123!',
+        password: 'Password123!',
         passwordNeverExpires: 'false',
         mustChangePassword: 'true',
         sendEmail: 'false'
@@ -226,6 +225,30 @@ describeIf(canRunIntegrationTests())('UsersManager Integration Tests', () => {
     it.skip('should reset password and update userId', async () => {
       // These are destructive operations - enable only when testing specific functionality
       // resetPassword sends emails, updateUserId changes login credentials
+      expect(testUserId, 'testUserId should be set by getUsers test').toBeDefined();
+
+      const resetResponse = await client.users.resetPassword(testUserId);
+
+      expect(resetResponse, 'resetPassword should return a response').toBeDefined();
+      const resetData = JSON.parse(resetResponse);
+
+      console.log('resetPassword response shape:', JSON.stringify(resetData, null, 2));
+
+      expect(resetData).toHaveProperty('meta');
+      expect(resetData.meta.status, 'resetPassword should return success status').toBe(200);
+      expect(resetData).toHaveProperty('data');
+      expect(resetData.data.passwordResetToken, 'Password reset should have a reset token').toBeDefined();
+
+      // Update the user ID
+      const newUserId = `updated_testuser_${Date.now()}`;
+
+      const updateResponse = await client.users.updateUserId(testUserId, newUserId);
+      const updateResult = JSON.parse(updateResponse);
+
+      console.log('updateUserId response:', JSON.stringify(updateResult, null, 2));
+
+      expect(updateResult).toHaveProperty('meta');
+      expect(updateResult.meta.status).toBe(200);
     });
   });
 });
