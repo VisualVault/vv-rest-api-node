@@ -18,6 +18,7 @@ describeIf(canRunIntegrationTests())('FormsManager Integration Tests', () => {
   let testTemplateId; // Discovered or imported
   let testTemplateName; // Name of the test template
   let importedTemplateId; // Template created by import test
+  let testCreateTemplateRevId // Revision ID of the create test template
 
   beforeAll(async () => {
     config = getTestConfig();
@@ -34,8 +35,12 @@ describeIf(canRunIntegrationTests())('FormsManager Integration Tests', () => {
       config.databaseAlias
     );
 
+    testCreateTemplateRevId = config.testFormTemplateRevisionIdForCreate;
+
+    const templateParams = testCreateTemplateRevId ? { q: `revisionId eq '${testCreateTemplateRevId}'` } : {};
+
     // Discover templates for subsequent tests
-    const templatesResponse = await client.forms.getFormTemplates({});
+    const templatesResponse = await client.forms.getFormTemplates(templateParams);
     const templatesData = JSON.parse(templatesResponse);
     if (templatesData.data.length > 0) {
       testTemplateId = templatesData.data[0].id;

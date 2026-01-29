@@ -45,10 +45,11 @@ export function getTestConfig() {
     customerAlias: process.env.VV_CUSTOMER_ALIAS,
     databaseAlias: process.env.VV_DATABASE_ALIAS,
     audience: process.env.VV_AUDIENCE || '',
-    jwtToken: process.env.VV_JWT_TOKEN || null,
     // Optional pre-configured test resource IDs
     testCustomQueryName: process.env.VV_TEST_CUSTOM_QUERY_NAME || null,
     testCustomQueryId: process.env.VV_TEST_CUSTOM_QUERY_ID || null,
+    // FormsManager AND FormInstanceManager tests
+    testFormTemplateRevisionIdForCreate: process.env.VV_TEST_FORM_TEMPLATE_REVISION_ID_FOR_CREATE || null,
     // Unreleased form template IDs (separate because releaseFormTemplate is a one-way operation)
     testUnreleasedFormTemplateIdForImport: process.env.VV_TEST_UNRELEASED_FORM_TEMPLATE_ID_FOR_IMPORT || null,
     testUnreleasedFormTemplateIdForRelease: process.env.VV_TEST_UNRELEASED_FORM_TEMPLATE_ID_FOR_RELEASE || null,
@@ -78,7 +79,16 @@ export function getTestConfig() {
     testFolderAlertUserId: process.env.VV_TEST_FOLDER_ALERT_USER_ID || null,
     testFolderIndexFieldId: process.env.VV_TEST_FOLDER_INDEX_FIELD_ID || null,
     // DocumentsManager tests (index field operations)
-    testIndexFolderId: process.env.VV_TEST_INDEX_FOLDER_ID || null
+    testIndexFolderId: process.env.VV_TEST_INDEX_FOLDER_ID || null,
+    // ModelsManager tests (intelligent object model operations)
+    testModelId: process.env.VV_TEST_MODEL_ID || null,
+    //ObjectsManager tests (intelligent object operations)
+    testObjectModelId: process.env.VV_TEST_OBJECT_MODEL_ID || null,
+    testObjectInstanceId: process.env.VV_TEST_OBJECT_INSTANCE_ID || null,
+    // UserNotificationsManager tests (user notification operations)
+    testNotifyUserId: process.env.VV_TEST_USER_NOTIFICATION_USER_ID  || null,
+    // WorkflowManager tests (workflow operations)
+    testWorkflowId: process.env.VV_TEST_WORKFLOW_ID || null,
   };
 }
 

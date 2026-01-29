@@ -307,7 +307,10 @@ it.skip('should create and update a user', async () => {
 ### Conditional Skips Based on Configuration
 
 Some tests should be written but can be conditionally skipped at runtime due to one or more of the following reasons:
-- They require server-side resources that must be pre-configured and cannot be created using existing library methods. (e.g. custom queries or specific templates)
+- They require unavailable server configurations.
+  - An endpoint that does not exist in the test environment.
+  - An endpoint with a known bug.
+  - Dependent on a Central Admin setting that must be enabled for one test and disabled for another.
 - They perform irreversible actions.
 - They have significant system impact or real-world effects. (e.g. sending emails)
 
