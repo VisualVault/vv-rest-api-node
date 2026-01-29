@@ -48,6 +48,8 @@ export function getTestConfig() {
     // Optional pre-configured test resource IDs
     testCustomQueryName: process.env.VV_TEST_CUSTOM_QUERY_NAME || null,
     testCustomQueryId: process.env.VV_TEST_CUSTOM_QUERY_ID || null,
+    // FormsManager AND FormInstanceManager tests
+    testFormTemplateRevisionIdForCreate: process.env.VV_TEST_FORM_TEMPLATE_REVISION_ID_FOR_CREATE || null,
     // Unreleased form template IDs (separate because releaseFormTemplate is a one-way operation)
     testUnreleasedFormTemplateIdForImport: process.env.VV_TEST_UNRELEASED_FORM_TEMPLATE_ID_FOR_IMPORT || null,
     testUnreleasedFormTemplateIdForRelease: process.env.VV_TEST_UNRELEASED_FORM_TEMPLATE_ID_FOR_RELEASE || null,

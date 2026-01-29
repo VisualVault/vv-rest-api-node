@@ -24,8 +24,10 @@ describeIf(canRunIntegrationTests())('FormsInstanceManager Integration Tests', (
       config.databaseAlias
     );
 
+    testTemplateRevId = config.testFormTemplateRevisionIdForCreate;
+
     // Discover templates for subsequent tests
-    const templatesResponse = await client.forms.getFormTemplates({});
+    const templatesResponse = await client.forms.getFormTemplates({ q: `revisionId eq '${testTemplateRevId}'` });
     const templatesData = JSON.parse(templatesResponse);
     if (templatesData.data.length > 0) {
       const [ testTemplate ] = templatesData.data;
