@@ -42,7 +42,7 @@ describeIf(canRunIntegrationTests())('RolesAndPermissionsManager Integration Tes
     it('should retrieve a specific resource feature permission for the requesting user', async () => {
       const docViewerResourceName = 'Document Viewer';
 
-      const docViewerUserFeatureResponse = await client.studioApi.permissions.getUserFeatures(docViewerResourceName);
+      const docViewerUserFeatureResponse = await client.studioApi.permissions.getUserFeatures({ resource: docViewerResourceName });
       const docViewerUserFeatureData = JSON.parse(docViewerUserFeatureResponse);
 
       console.log('getUserFeatures response:', JSON.stringify(docViewerUserFeatureData, null, 2));
@@ -55,6 +55,7 @@ describeIf(canRunIntegrationTests())('RolesAndPermissionsManager Integration Tes
 
       expect(docViewerUserFeaturePermissions, `User features data for '${docViewerResourceName}' resource should be defined`).toBeDefined();
       expect(Array.isArray(docViewerUserFeaturePermissions), `User features should be an array of permission for '${docViewerResourceName}'`).toBe(true);
+      expect(docViewerUserFeaturePermissions.length).toBeGreaterThan(0);
 
       docViewerUserFeaturePermissions.forEach((permission) => {
         expect(permission).toHaveProperty('Resource_Name', docViewerResourceName);
