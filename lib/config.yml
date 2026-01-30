@@ -83,8 +83,10 @@ ResourceUri:
   Layout: /layout
   ReportServerPDF: /ReportServer/{id}/PDF
   DocApi:
+    CreateDocument: /Documents
     GetRevision: /Documents/revisions/{id}
     OcrStatus: /Documents/ocr/{id}
+    UpdateDocument: /Documents/{id}
     AdvancedSearch: /Search/Advanced
   FormsApi:
     FormInstance: /forminstance
