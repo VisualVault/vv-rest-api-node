@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed server/microservice dependencies (Express, EJS, body-parser, multer, etc.)
 - Streamlined package to focus solely on REST API client functionality
 - Reduced dependency footprint for better performance and security
+- StudioAPI method to retrieve the requesting user's available feature permissions
 
 ### Added
 - ES module support with CommonJS fallback
