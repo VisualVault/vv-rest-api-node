@@ -25,7 +25,13 @@ export default defineConfig({
         'lib/**/*.test.js',
         'lib/**/*.backup',
         'node_modules/**'
-      ]
+      ],
+      thresholds: {
+        functions: 70,
+        lines: 70,
+        branches: 70,
+        statements: 70
+      }
     },
 
     // Test match patterns - integration tests only

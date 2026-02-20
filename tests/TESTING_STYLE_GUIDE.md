@@ -10,18 +10,27 @@ These are **minimum viable integration tests** to verify that API methods work c
 
 ## File Structure
 
+### Directory Organization
+
+Test files are organized into subdirectories that mirror the `lib/` API module structure:
+
+```
+tests/integration/setup.js              (shared utilities)
+tests/integration/_fixtures/            (test fixtures)
+```
+
 ### Naming Convention
 
 - Test files: `{manager-name}.test.js` (e.g., `users.test.js`, `forms.test.js`)
-- Location: `tests/integration/`
-- Shared utilities: `setup.js`
+- Location: `tests/integration/{apiName}/` (e.g., `tests/integration/vvRestApi/users.test.js`)
+- Shared utilities: `tests/integration/setup.js`
 
 ### Basic Test File Template
 
 ```javascript
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
-import { getTestConfig, canRunIntegrationTests, describeIf } from './setup.js';
-import { Authorize } from '../../lib/VVRestApi.js';
+import { getTestConfig, canRunIntegrationTests, describeIf } from '../setup.js';
+import { Authorize } from '../../../lib/VVRestApi.js';
 
 describeIf(canRunIntegrationTests())('{ManagerName} Integration Tests', () => {
   let config;
@@ -88,7 +97,8 @@ describeIf(canRunIntegrationTests())('{ManagerName} Integration Tests', () => {
 |-----------|---------|
 | Authentication only | 60000ms |
 | Auth + resource creation | 120000ms |
-| Slow operations (PDF) | 60000ms |
+
+For individual slow tests (e.g., PDF generation), specify a per-test timeout as the second argument to `it()`.
 
 ```javascript
 beforeAll(async () => {
@@ -138,9 +148,9 @@ const response = await client.manager.method({});
 expect(response, 'methodName should return a response').toBeDefined();
 const data = JSON.parse(response);
 
-expect(data).toHaveProperty('meta');
+expect(data, 'Response should have meta property').toHaveProperty('meta');
 expect(data.meta.status, 'methodName should return success status').toBe(200);
-expect(data).toHaveProperty('data');
+expect(data, 'Response should have data property').toHaveProperty('data');
 ```
 
 ### Never Use Silent Early Returns
@@ -194,47 +204,33 @@ expect(data.meta.status, 'postForms should return 201 Created').toBe(201);
 Each test should create its own resources and clean them up via `afterEach`. This ensures tests are independent and can run in any order.
 
 ```javascript
-describe('getDocumentRevision', () => {
-  let documentId;
-  let revisionId;
+describe('methodName', () => {
+  let resourceId;
 
   afterEach(async () => {
-    if (revisionId) {
+    if (resourceId) {
       try {
-        await client.documents.deleteDocument({}, revisionId);
-        console.log('Cleanup - deleted test document:', revisionId);
+        await client.manager.deleteResource(resourceId);
       } catch (error) {
         console.warn('Cleanup failed:', error.message);
       }
-      revisionId = null;
-      documentId = null;
+      resourceId = null;
     }
   });
 
-  it('should get document revision details', async () => {
+  it('should do something with a resource', async () => {
     // Create resource in the test
-    const docData = {
-      folderId: testFolderId,
-      name: `Test Document ${Date.now()}`,
-      description: 'Test document - safe to delete',
-      documentState: 1
-    };
+    const createResponse = await client.manager.createResource(data);
+    resourceId = JSON.parse(createResponse).data.id;
 
-    const createResponse = await client.documents.postDoc(docData);
-    const createData = JSON.parse(createResponse);
- 
-    documentId = createData.data.documentId;
-    revisionId = createData.data.id;
-
-    // Now test the actual method
-    const response = await client.documents.getDocumentRevision({}, documentId);
-    const data = JSON.parse(response);
-
-    expect(data.meta.status, 'Should return success status').toBe(200);
-    expect(data.data).toHaveProperty('documentId', documentId);
+    // Test the actual method
+    const response = await client.manager.method(resourceId);
+    // ... assertions ...
   });
 });
 ```
+
+See [Common Patterns](#common-patterns) for full examples with real API calls.
 
 ### Use afterAll for Suite-Level Cleanup
 
@@ -270,13 +266,13 @@ describe('assignUser', () => {
     }
   });
 
-  runAssignTest('should assign a user to a database', async () => {
+  it('should assign a user to a database', async () => {
     // Test implementation
   });
 });
 ```
 
-**Note:** No `if` check needed inside `beforeEach` - it only runs when the test runs.
+**Note:** When a test is skipped via `it.skipIf()`, Vitest does not run `beforeEach` hooks for it, so no guard check is needed inside `beforeEach`.
 
 ### Document Missing Cleanup APIs
 
@@ -314,24 +310,26 @@ Some tests should be written but can be conditionally skipped at runtime due to 
 - They perform irreversible actions.
 - They have significant system impact or real-world effects. (e.g. sending emails)
 
-These tests should use conditional test runners to skip execution when the required environment variables are not set.
+Use vitest's built-in `it.skipIf()` to conditionally skip tests when the required environment variables are not set.
 
-**IMPORTANT:** The `setup.js` import must come before any `process.env` checks, as it loads the `.env` file via dotenv. Without this import order, the environment variables won't be available when the conditional test runners are evaluated at module load time.
+**IMPORTANT:** The `setup.js` import must come before any `process.env` checks, as it loads the `.env` file via dotenv. Without this import order, the environment variables won't be available when the skip conditions are evaluated at module load time.
 
 ```javascript
 import { describe, it, expect, beforeAll } from 'vitest';
 // Import setup.js FIRST to ensure dotenv loads before checking env vars
-import { getTestConfig, canRunIntegrationTests, describeIf } from './setup.js';
-import { Authorize } from '../../lib/VVRestApi.js';
+import { getTestConfig, canRunIntegrationTests, describeIf } from '../setup.js';
+import { Authorize } from '../../../lib/VVRestApi.js';
 
-// Define conditional test runner at module level (AFTER setup.js import)
-const runCustomQueryTest = process.env.VV_TEST_CUSTOM_QUERY_NAME ? it : it.skip;
+// Define skip conditions at module level (AFTER setup.js import)
+// Variable is true when the test should be SKIPPED
+const skipQueryByNameTest = !process.env.VV_TEST_CUSTOM_QUERY_NAME;
+const skipQueryByIdTest = !process.env.VV_TEST_CUSTOM_QUERY_ID;
 
 describeIf(canRunIntegrationTests())('CustomQueryManager Integration Tests', () => {
   // ... beforeAll setup ...
 
   describe('getCustomQueryResultsByName', () => {
-    runCustomQueryTest('should return results for a custom query by name', async () => {
+    it.skipIf(skipQueryByNameTest)('should return results for a custom query by name', async () => {
       const response = await client.customQuery.getCustomQueryResultsByName(
         config.testCustomQueryName,
         {}
@@ -339,6 +337,16 @@ describeIf(canRunIntegrationTests())('CustomQueryManager Integration Tests', () 
       // ... assertions ...
     });
   });
+});
+```
+
+For conditions that combine multiple environment variables:
+
+```javascript
+const skipModifyTest = !(process.env.VV_TEST_SECURITY_PARENT_ID && process.env.VV_TEST_SECURITY_MEMBER_ID);
+
+it.skipIf(skipModifyTest)('should add a security member', async () => {
+  // ...
 });
 ```
 
@@ -365,22 +373,16 @@ return {
 # VV_TEST_CUSTOM_QUERY_ID=your-custom-query-guid
 ```
 
-3. **Use conditional test runner in your test file:**
+3. **Use the config value in your test:**
 
 ```javascript
-const runTest = process.env.VV_TEST_CUSTOM_QUERY_NAME ? it : it.skip;
-
-describe('methodName', () => {
-  runTest('should do something with configured resource', async () => {
-    // Test runs only when env var is set
-  });
-});
+const response = await client.customQuery.getCustomQueryResultsByName(
+  config.testCustomQueryName,
+  {}
+);
 ```
 
-This pattern ensures:
-- Tests are skipped (not failed) when configuration is missing
-- CI/CD pipelines pass even without optional resources
-- Developers can enable tests by adding values to their `.env` file
+If the resource may not be available in all environments, use `it.skipIf()` to conditionally skip (see [Conditional Skips](#conditional-skips-based-on-configuration) above).
 
 ---
 
@@ -398,10 +400,10 @@ describe('getUsers', () => {
     expect(response, 'getUsers should return a response').toBeDefined();
     const data = JSON.parse(response);
 
-    expect(data).toHaveProperty('meta');
+    expect(data, 'Response should have meta property').toHaveProperty('meta');
     expect(data.meta.status, 'getUsers should return success status').toBe(200);
     expect(data.data, 'Response should contain users array').toBeDefined();
-    expect(Array.isArray(data.data)).toBe(true);
+    expect(Array.isArray(data.data), 'data should be an array').toBe(true);
   });
 });
 ```
@@ -446,7 +448,7 @@ describe('getDocumentRevision', () => {
     const data = JSON.parse(response);
 
     expect(data.meta.status, 'Should return success status').toBe(200);
-    expect(data.data).toHaveProperty('documentId', documentId);
+    expect(data.data, 'Response data should have documentId').toHaveProperty('documentId', documentId);
   });
 });
 ```
@@ -508,6 +510,12 @@ describe('updateDocumentExpiration', () => {
 
   it('should update document expiration date', async () => {
     // Create document for this test
+    const docData = {
+      folderId: testFolderId,
+      name: `Test Document ${Date.now()}`,
+      documentState: 1
+    };
+
     const createResponse = await client.documents.postDoc(docData);
     const createData = JSON.parse(createResponse);
     documentId = createData.data.documentId;
@@ -533,6 +541,12 @@ No `afterEach` needed - the delete operation IS the test:
 describe('deleteDocument', () => {
   it('should delete a document', async () => {
     // Create document for this test
+    const docData = {
+      folderId: testFolderId,
+      name: `Test Document ${Date.now()}`,
+      documentState: 1
+    };
+
     const createResponse = await client.documents.postDoc(docData);
     const revisionId = JSON.parse(createResponse).data.id;
 
