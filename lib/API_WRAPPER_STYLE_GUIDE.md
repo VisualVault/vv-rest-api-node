@@ -563,25 +563,31 @@ ResourceUri:
 
 ## Specialized APIs
 
-### Lazy Initialization Pattern
+### Nullable Property Pattern
 
-Specialized APIs use getter properties for lazy initialization:
+Specialized APIs (DocApi, FormsApi, ObjectsApi, StudioApi, NotificationsApi) use simple nullable properties.
+When not enabled/configured, they remain `null`. Consumers should check for availability before use.
 
 ```javascript
 // In VVClient constructor
-this._docApi = null;
+// Extended API modules - null when not enabled/configured
+this.docApi = null;
+this.formsApi = null;
+this.objectsApi = null;
+this.studioApi = null;
+this.notificationsApi = null;
+```
 
-Object.defineProperties(this, {
-    docApi: {
-        get: function () {
-            if (this._docApi != null && this._docApi.isEnabled && this._docApi.baseUrl) {
-                return this._docApi;
-            } else {
-                throw new ReferenceError("Document Api not enabled");
-            }
-        }
-    }
-});
+### Consumer Usage
+
+```javascript
+// Check before use
+if (client.docApi) {
+    const result = await client.docApi.documents.getRevision(revisionId);
+}
+
+// Or use optional chaining
+const result = await client.docApi?.documents.getRevision(revisionId);
 ```
 
 ### Creation Method Pattern
@@ -601,13 +607,13 @@ async createDocApi(sessionToken) {
 
         // 4. Ensure JWT token type
         if (apiSession['tokenType'] === 'jwt') {
-            this._docApi = new DocApi(apiSession, configResponse.data);
+            this.docApi = new DocApi(apiSession, configResponse.data);
         } else {
             // Convert to JWT if needed
             const jwtResponse = JSON.parse(await this.users.getUserJwt(apiSession.audience));
             if (jwtResponse?.data?.token) {
                 apiSession.convertToJwt(jwtResponse.data);
-                this._docApi = new DocApi(apiSession, configResponse.data);
+                this.docApi = new DocApi(apiSession, configResponse.data);
             }
         }
     }
