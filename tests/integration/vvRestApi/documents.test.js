@@ -354,6 +354,92 @@ describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () =>
     });
   });
 
+  describe('getDocumentWebDavUrl', () => {
+    let revisionId;
+
+    afterEach(async () => {
+      if (revisionId) {
+        try {
+          await client.documents.deleteDocument({}, revisionId);
+          console.log('Cleanup - deleted webdav url test document:', revisionId);
+        } catch (error) {
+          console.warn('Cleanup webdav url test document failed:', error.message);
+        }
+        revisionId = null;
+      }
+    });
+
+    it('should return a WebDAV URL for a document', async () => {
+      const docName = `WebDav URL Test Document ${Date.now()}`;
+      const docData = {
+        folderId: testFolderId,
+        name: docName,
+        description: 'Document for getDocumentWebDavUrl test - safe to delete',
+        documentState: 1
+      };
+
+      const createResponse = await client.documents.postDoc(docData);
+      const createData = JSON.parse(createResponse);
+      const documentId = createData.data.documentId;
+      revisionId = createData.data.id;
+      console.log('Created document for webdav url test - documentId:', documentId);
+
+      const response = await client.documents.getDocumentWebDavUrl(documentId);
+
+      expect(response, 'getDocumentWebDavUrl should return a response').toBeDefined();
+      const data = JSON.parse(response);
+
+      console.log('getDocumentWebDavUrl response:', JSON.stringify(data, null, 2));
+
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.status, 'getDocumentWebDavUrl should return success status').toBe(200);
+      expect(data).toHaveProperty('data');
+    });
+  });
+
+  describe('getDocumentWopiUrl', () => {
+    let revisionId;
+
+    afterEach(async () => {
+      if (revisionId) {
+        try {
+          await client.documents.deleteDocument({}, revisionId);
+          console.log('Cleanup - deleted wopi url test document:', revisionId);
+        } catch (error) {
+          console.warn('Cleanup wopi url test document failed:', error.message);
+        }
+        revisionId = null;
+      }
+    });
+
+    it('should return a WOPI URL for a document', async () => {
+      const docName = `Wopi URL Test Document ${Date.now()}`;
+      const docData = {
+        folderId: testFolderId,
+        name: docName,
+        description: 'Document for getDocumentWopiUrl test - safe to delete',
+        documentState: 1
+      };
+
+      const createResponse = await client.documents.postDoc(docData);
+      const createData = JSON.parse(createResponse);
+      const documentId = createData.data.documentId;
+      revisionId = createData.data.id;
+      console.log('Created document for wopi url test - documentId:', documentId);
+
+      const response = await client.documents.getDocumentWopiUrl(documentId);
+
+      expect(response, 'getDocumentWopiUrl should return a response').toBeDefined();
+      const data = JSON.parse(response);
+
+      console.log('getDocumentWopiUrl response:', JSON.stringify(data, null, 2));
+
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.status, 'getDocumentWopiUrl should return success status').toBe(200);
+      expect(data).toHaveProperty('data');
+    });
+  });
+
   describe('deleteDocument', () => {
     it('should delete a document', async () => {
       // Create a document for this test
