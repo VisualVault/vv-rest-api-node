@@ -55,9 +55,32 @@ ResourceUri:
   UsersIdUserId: /users/{id}/userId
   UsersMe: /users/me
   GetGroups: /groups
+  GroupById: /groups/{id}
+  AddGroup: /groups
+  UpdateGroup: /groups/{id}
+  DeleteGroup: /groups/{id}
   Groups: /sites/{id}/groups
   GroupsUsers: /groups/{id}/users
   GroupsAddUser: /groups/{groupId}/users/{userId}
+  SiteById: /sites/{id}
+  SiteUsers: /sites/{id}/users
+  ChangeGroupSite: /sites/changegroupsite
+  LanguageAreas: /resource/area
+  Languages: /resource/language
+  ExportLanguages: /resource/customerLocalization/exportCsv
+  ImportLanguages: /resource/customerLocalization/importCsv
+  Reports: /reports
+  DropDownLists: /lists
+  DocumentTypes: /documenttypes
+  SavedSearches: /savedsearches
+  DocumentFields: /documentfields
+  SavedSearchIndexFields: /savedSearchIndexFields
+  LastDocuments: /lastdocuments
+  FrequentDocuments: /frequentdocuments
+  SavedSearchDocuments: /savedsearchdocuments/{savedSearchId}
+  DocumentDefaultAction: /documentDefaultAction/{documentId}
+  CreateDocumentZipFile: /documents/CreateDocumentZipFile
+  GetDocumentZipFileStatus: /documents/GetDocumentZipFileStatus
   Folders: /folders
   FoldersId: /folders/{id}
   FoldersCopy: /folders/copy
