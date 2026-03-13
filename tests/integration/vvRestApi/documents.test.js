@@ -568,7 +568,7 @@ describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () =>
       expect(createData).toHaveProperty('meta');
       expect(createData.meta.status, 'createDocumentZipFile should return success status').toBe(200);
 
-      const downloadKey = createData.data?.downloadKey || createData.data?.key;
+      const downloadKey = createData.data?.downloadKey;
       expect(downloadKey, 'zip operation should return a download key').toBeDefined();
 
       const statusResponse = await client.documents.getDocumentZipFileStatus({}, downloadKey);
