@@ -73,25 +73,29 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
     });
   });
 
-  describe('addIndexField', () => {
-    it.skipIf(skipIndexFieldTest)('should add an index field', async () => {
+  describe('createIndexField', () => {
+    it.skipIf(skipIndexFieldTest)('should create an index field', async () => {
       createdIndexFieldName = `Field ${Date.now()}`;
 
-      const createResponse = await client.indexFields.addIndexField(
+      const newFieldData = {
+        fieldType: 'Text',
+        label: createdIndexFieldName,
+        description: 'Created by test',
+        required: false,
+        connectionId: null,
+        queryId: null,
+        queryDisplayField: null,
+        queryValueField: null,
+        dropDownListId: null,
+        defaultValue: null
+      };
+
+      const createResponse = await client.indexFields.createIndexField(
         {},
-        'Text',
-        createdIndexFieldName,
-        'Created by test',
-        false,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        newFieldData
       );
       const createData = JSON.parse(createResponse);
-      expect(createData.meta.status, 'addIndexField should return success status').toBe(200);
+      expect(createData.meta.status, 'createIndexField should return success status').toBe(200);
 
       createdIndexFieldId = createData.data?.id;
       expect(createdIndexFieldId, 'Created index field id should be defined').toBeDefined();
@@ -100,21 +104,25 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
 
   describe('updateIndexField', () => {
     it.skipIf(skipIndexFieldTest)('should update an index field', async () => {
-      expect(createdIndexFieldId, 'createdIndexFieldId should be set by addIndexField test').toBeDefined();
+      expect(createdIndexFieldId, 'createdIndexFieldId should be set by createIndexField test').toBeDefined();
+
+      const updatedFieldData = {
+        fieldType: 'Text',
+        label: `${createdIndexFieldName} Updated`,
+        description: 'Updated by test',
+        required: false,
+        connectionId: null,
+        queryId: null,
+        queryDisplayField: null,
+        queryValueField: null,
+        dropDownListId: null,
+        defaultValue: null
+      };
 
       const updateResponse = await client.indexFields.updateIndexField(
         {},
         createdIndexFieldId,
-        'Text',
-        `${createdIndexFieldName} Updated`,
-        'Updated by test',
-        false,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
+        updatedFieldData
       );
       const updateData = JSON.parse(updateResponse);
       expect(updateData.meta.status, 'updateIndexField should return success status').toBe(200);
@@ -123,7 +131,7 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
 
   describe('moveIndexFieldAfter', () => {
     it.skipIf(skipIndexFieldTest)('should move an index field after another', async () => {
-      expect(createdIndexFieldId, 'createdIndexFieldId should be set by addIndexField test').toBeDefined();
+      expect(createdIndexFieldId, 'createdIndexFieldId should be set by createIndexField test').toBeDefined();
       expect(testIndexFieldId, 'testIndexFieldId should be set by getIndexFields test').toBeDefined();
 
       if (testIndexFieldId === createdIndexFieldId) {
@@ -138,7 +146,7 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
 
   describe('deleteIndexField', () => {
     it.skipIf(skipIndexFieldTest)('should delete an index field', async () => {
-      expect(createdIndexFieldId, 'createdIndexFieldId should be set by addIndexField test').toBeDefined();
+      expect(createdIndexFieldId, 'createdIndexFieldId should be set by createIndexField test').toBeDefined();
 
       const deleteResponse = await client.indexFields.deleteIndexField({}, createdIndexFieldId);
       const deleteData = JSON.parse(deleteResponse);
