@@ -1,10 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import fs from 'fs';
 import { getTestConfig, canRunIntegrationTests, describeIf } from '../setup.js';
 import { Authorize } from '../../../lib/VVRestApi.js';
-
-// Conditional test runner - requires an import fixture file for importLanguages
-const skipLanguageImportTest = !process.env.VV_TEST_LANGUAGE_IMPORT_FILE;
 
 describeIf(canRunIntegrationTests())('LanguageResourcesManager Integration Tests', () => {
   let config;
@@ -80,7 +76,7 @@ describeIf(canRunIntegrationTests())('LanguageResourcesManager Integration Tests
       const area = areasData.data[0].name || areasData.data[0];
       const lang = langsData.data[0].code || langsData.data[0];
 
-      const response = await client.languageResources.exportLanguages(area, lang);
+      const response = await client.languageResources.exportLanguages({ area, lang });
 
       expect(response, 'exportLanguages should return a response').toBeDefined();
       console.log('exportLanguages response type:', typeof response);
@@ -88,18 +84,32 @@ describeIf(canRunIntegrationTests())('LanguageResourcesManager Integration Tests
   });
 
   describe('importLanguages', () => {
-    it.skipIf(skipLanguageImportTest)('should import languages from a file', async () => {
+    it('should import languages from exported language data', async () => {
       const areasResponse = await client.languageResources.getLanguageAreas({});
       const areasData = JSON.parse(areasResponse);
       const langsResponse = await client.languageResources.getLanguages({});
       const langsData = JSON.parse(langsResponse);
 
+      if (!areasData.data || areasData.data.length === 0) {
+        console.log('No language areas available, skipping importLanguages test');
+        return;
+      }
+
+      if (!langsData.data || langsData.data.length === 0) {
+        console.log('No languages available, skipping importLanguages test');
+        return;
+      }
+
       const area = areasData.data?.[0]?.name || areasData.data?.[0];
       const lang = langsData.data?.[0]?.code || langsData.data?.[0];
-      const filePath = process.env.VV_TEST_LANGUAGE_IMPORT_FILE;
 
-      const buffer = fs.readFileSync(filePath);
-      const response = await client.languageResources.importLanguages(area, lang, buffer, 'import.csv');
+      const exported = await client.languageResources.exportLanguages({ area, lang });
+
+      expect(exported, 'exportLanguages should return language data for import').toBeDefined();
+
+      const buffer = Buffer.isBuffer(exported) ? exported : Buffer.from(exported);
+
+      const response = await client.languageResources.importLanguages({ area, lang }, buffer, 'import.csv');
 
       expect(response, 'importLanguages should return a response').toBeDefined();
       const data = JSON.parse(response);
