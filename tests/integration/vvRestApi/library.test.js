@@ -51,6 +51,18 @@ describeIf(canRunIntegrationTests())('LibraryManager Integration Tests', () => {
     });
   });
 
+  describe('getFolderByPath', () => {
+    it('should return a folder by path', async () => {
+      const response = await client.library.getFolderByPath({}, '/');
+
+      expect(response, 'getFolderByPath should return a response').toBeDefined();
+      const data = JSON.parse(response);
+
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.status, 'getFolderByPath should return success status').toBe(200);
+    });
+  });
+
   describe('postFolderByPath', () => {
     let folderId;
 

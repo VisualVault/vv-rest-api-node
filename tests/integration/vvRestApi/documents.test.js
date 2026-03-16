@@ -501,16 +501,6 @@ describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () =>
     });
   });
 
-  describe('getFolder', () => {
-    it('should return a folder by path', async () => {
-      const response = await client.documents.getFolder({}, '/');
-      const data = JSON.parse(response);
-
-      expect(data).toHaveProperty('meta');
-      expect(data.meta.status, 'getFolder should return success status').toBe(200);
-    });
-  });
-
   describe('getDocumentIndexFields / getDocumentDefaultLink', () => {
     it('should return index fields and default link for a created document', async () => {
       const docData = {
