@@ -456,6 +456,7 @@ describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () =>
   });
 
   describe('createDocumentType', () => {
+    // SKIPPED: There is no API endpoint to delete/undo a created document type - enable only when needed by supplying env vars
     it.skipIf(skipDocumentTypeCreate)('should create a document type', async () => {
       const response = await client.documents.createDocumentType({}, `Type ${Date.now()}`);
       const data = JSON.parse(response);
@@ -549,8 +550,9 @@ describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () =>
   });
 
   describe('createDocumentZipFile / getDocumentZipFileStatus', () => {
+    // SKIPPED: Requires a document DH id - enable supplying env var
     it.skipIf(skipDocumentZipTests)('should create a zip job and query its status', async () => {
-      const documentDhId = process.env.VV_TEST_DOCUMENT_DH_ID;
+      const documentDhId = config.testDocumentDhId;
 
       const createResponse = await client.documents.createDocumentZipFile({}, [documentDhId]);
       const createData = JSON.parse(createResponse);

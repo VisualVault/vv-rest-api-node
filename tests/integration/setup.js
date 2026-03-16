@@ -80,6 +80,8 @@ export function getTestConfig() {
     testFolderIndexFieldId: process.env.VV_TEST_FOLDER_INDEX_FIELD_ID || null,
     // DocumentsManager tests (index field operations)
     testIndexFolderId: process.env.VV_TEST_INDEX_FOLDER_ID || null,
+    // DocumentsManager tests (zip status operations)
+    testDocumentDhId: process.env.VV_TEST_DOCUMENT_DH_ID || null,
     // ModelManager tests (intelligent object model operations)
     testModelId: process.env.VV_TEST_MODEL_ID || null,
     //ObjectManager tests (intelligent object operations)
