@@ -242,19 +242,6 @@ describeIf(canRunIntegrationTests())('SitesManager Integration Tests', () => {
     });
   });
 
-  describe('getUsers', () => {
-    it('should return users for a site', async () => {
-      expect(testSiteId, 'testSiteId should be set by postSites test').toBeDefined();
-
-      const response = await client.sites.getUsers({}, testSiteId);
-      const data = JSON.parse(response);
-
-      expect(data).toHaveProperty('meta');
-      expect(data.meta.status, 'getUsers should return success status').toBe(200);
-      expect(Array.isArray(data.data), 'data should be an array').toBe(true);
-    });
-  });
-
   describe('changeGroupSite', () => {
     it('should move a group between sites', async () => {
       expect(testSiteId, 'testSiteId should be set by postSites test').toBeDefined();

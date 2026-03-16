@@ -60,10 +60,10 @@ ResourceUri:
   UpdateGroup: /groups/{id}
   DeleteGroup: /groups/{id}
   Groups: /sites/{id}/groups
+  SiteGroupById: /sites/{siteId}/groups/{groupId}
   GroupsUsers: /groups/{id}/users
   GroupsAddUser: /groups/{groupId}/users/{userId}
   SiteById: /sites/{id}
-  SiteUsers: /sites/{id}/users
   ChangeGroupSite: /sites/changegroupsite
   LanguageAreas: /resource/area
   Languages: /resource/language
