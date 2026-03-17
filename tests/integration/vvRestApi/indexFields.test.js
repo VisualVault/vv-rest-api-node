@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 // Import setup.js first to ensure dotenv loads before checking env vars
 import { getTestConfig, canRunIntegrationTests, describeIf } from '../setup.js';
 import { Authorize } from '../../../lib/VVRestApi.js';
@@ -9,8 +9,6 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
   let config;
   let client;
   let testIndexFieldId;
-  let createdIndexFieldId;
-  let createdIndexFieldName;
 
   beforeAll(async () => {
     config = getTestConfig();
@@ -74,12 +72,24 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
   });
 
   describe('createIndexField', () => {
-    it.skipIf(skipIndexFieldTest)('should create an index field', async () => {
-      createdIndexFieldName = `Field ${Date.now()}`;
+    let createdIndexFieldId;
 
+    afterEach(async () => {
+      if (createdIndexFieldId) {
+        try {
+          await client.indexFields.deleteIndexField({}, createdIndexFieldId);
+        } catch (error) {
+          console.warn('Cleanup createIndexField test field failed:', error.message);
+        }
+        createdIndexFieldId = null;
+      }
+    });
+
+    // SKIPPED - requires a folder with index fields configured
+    it.skipIf(skipIndexFieldTest)('should create an index field', async () => {
       const newFieldData = {
         fieldType: 'Text',
-        label: createdIndexFieldName,
+        label: `Field ${Date.now()}`,
         description: 'Created by test',
         required: false,
         connectionId: null,
@@ -90,10 +100,7 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
         defaultValue: null
       };
 
-      const createResponse = await client.indexFields.createIndexField(
-        {},
-        newFieldData
-      );
+      const createResponse = await client.indexFields.createIndexField({}, newFieldData);
       const createData = JSON.parse(createResponse);
       expect(createData.meta.status, 'createIndexField should return success status').toBe(200);
 
@@ -103,9 +110,45 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
   });
 
   describe('updateIndexField', () => {
-    it.skipIf(skipIndexFieldTest)('should update an index field', async () => {
-      expect(createdIndexFieldId, 'createdIndexFieldId should be set by createIndexField test').toBeDefined();
+    let createdIndexFieldId;
+    let createdIndexFieldName;
 
+    beforeEach(async () => {
+      if (skipIndexFieldTest) {
+        return;
+      }
+
+      createdIndexFieldName = `Field ${Date.now()}`;
+      const createResponse = await client.indexFields.createIndexField({}, {
+        fieldType: 'Text',
+        label: createdIndexFieldName,
+        description: 'Created for update test',
+        required: false,
+        connectionId: null,
+        queryId: null,
+        queryDisplayField: null,
+        queryValueField: null,
+        dropDownListId: null,
+        defaultValue: null
+      });
+      const createData = JSON.parse(createResponse);
+      expect(createData.meta.status, 'createIndexField should return success status').toBe(200);
+      createdIndexFieldId = createData.data?.id;
+    });
+
+    afterEach(async () => {
+      if (createdIndexFieldId) {
+        try {
+          await client.indexFields.deleteIndexField({}, createdIndexFieldId);
+        } catch (error) {
+          console.warn('Cleanup updateIndexField test field failed:', error.message);
+        }
+        createdIndexFieldId = null;
+      }
+    });
+
+    // SKIPPED - requires a folder with index fields configured
+    it.skipIf(skipIndexFieldTest)('should update an index field', async () => {
       const updatedFieldData = {
         fieldType: 'Text',
         label: `${createdIndexFieldName} Updated`,
@@ -119,19 +162,50 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
         defaultValue: null
       };
 
-      const updateResponse = await client.indexFields.updateIndexField(
-        {},
-        createdIndexFieldId,
-        updatedFieldData
-      );
+      const updateResponse = await client.indexFields.updateIndexField({}, createdIndexFieldId, updatedFieldData);
       const updateData = JSON.parse(updateResponse);
       expect(updateData.meta.status, 'updateIndexField should return success status').toBe(200);
     });
   });
 
   describe('moveIndexFieldAfter', () => {
+    let createdIndexFieldId;
+
+    beforeEach(async () => {
+      if (skipIndexFieldTest) {
+        return;
+      }
+
+      const createResponse = await client.indexFields.createIndexField({}, {
+        fieldType: 'Text',
+        label: `Field ${Date.now()}`,
+        description: 'Created for move test',
+        required: false,
+        connectionId: null,
+        queryId: null,
+        queryDisplayField: null,
+        queryValueField: null,
+        dropDownListId: null,
+        defaultValue: null
+      });
+      const createData = JSON.parse(createResponse);
+      expect(createData.meta.status, 'createIndexField should return success status').toBe(200);
+      createdIndexFieldId = createData.data?.id;
+    });
+
+    afterEach(async () => {
+      if (createdIndexFieldId) {
+        try {
+          await client.indexFields.deleteIndexField({}, createdIndexFieldId);
+        } catch (error) {
+          console.warn('Cleanup moveIndexFieldAfter test field failed:', error.message);
+        }
+        createdIndexFieldId = null;
+      }
+    });
+
+    // SKIPPED - requires a folder with index fields configured
     it.skipIf(skipIndexFieldTest)('should move an index field after another', async () => {
-      expect(createdIndexFieldId, 'createdIndexFieldId should be set by createIndexField test').toBeDefined();
       expect(testIndexFieldId, 'testIndexFieldId should be set by getIndexFields test').toBeDefined();
 
       if (testIndexFieldId === createdIndexFieldId) {
@@ -139,15 +213,49 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
       }
 
       const moveResponse = await client.indexFields.moveIndexFieldAfter({}, createdIndexFieldId, testIndexFieldId);
-        const moveData = JSON.parse(moveResponse);
-        expect(moveData.meta.status, 'moveIndexFieldAfter should return success status').toBe(200);
+      const moveData = JSON.parse(moveResponse);
+      expect(moveData.meta.status, 'moveIndexFieldAfter should return success status').toBe(200);
     });
   });
 
   describe('deleteIndexField', () => {
-    it.skipIf(skipIndexFieldTest)('should delete an index field', async () => {
-      expect(createdIndexFieldId, 'createdIndexFieldId should be set by createIndexField test').toBeDefined();
+    let createdIndexFieldId;
 
+    beforeEach(async () => {
+      if (skipIndexFieldTest) {
+        return;
+      }
+
+      const createResponse = await client.indexFields.createIndexField({}, {
+        fieldType: 'Text',
+        label: `Field ${Date.now()}`,
+        description: 'Created for delete test',
+        required: false,
+        connectionId: null,
+        queryId: null,
+        queryDisplayField: null,
+        queryValueField: null,
+        dropDownListId: null,
+        defaultValue: null
+      });
+      const createData = JSON.parse(createResponse);
+      expect(createData.meta.status, 'createIndexField should return success status').toBe(200);
+      createdIndexFieldId = createData.data?.id;
+    });
+
+    afterEach(async () => {
+      if (createdIndexFieldId) {
+        try {
+          await client.indexFields.deleteIndexField({}, createdIndexFieldId);
+        } catch (error) {
+          console.warn('Cleanup deleteIndexField test field failed:', error.message);
+        }
+        createdIndexFieldId = null;
+      }
+    });
+
+    // SKIPPED - requires a folder with index fields configured
+    it.skipIf(skipIndexFieldTest)('should delete an index field', async () => {
       const deleteResponse = await client.indexFields.deleteIndexField({}, createdIndexFieldId);
       const deleteData = JSON.parse(deleteResponse);
       expect(deleteData.meta.status, 'deleteIndexField should return success status').toBe(200);
