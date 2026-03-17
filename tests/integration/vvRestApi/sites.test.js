@@ -6,8 +6,6 @@ describeIf(canRunIntegrationTests())('SitesManager Integration Tests', () => {
   let config;
   let client;
   let testSiteId; // Shared test site for multiple tests
-  let secondSiteId;
-  let movableGroupId;
 
   beforeAll(async () => {
     config = getTestConfig();
@@ -26,22 +24,6 @@ describeIf(canRunIntegrationTests())('SitesManager Integration Tests', () => {
   }, 60000); // Allow up to 60s for authentication
 
   afterAll(async () => {
-    if (movableGroupId) {
-      try {
-        await client.groups.deleteGroup({}, movableGroupId);
-      } catch (err) {
-        console.log('Cleanup movable group failed:', movableGroupId, err.message);
-      }
-    }
-
-    if (secondSiteId) {
-      try {
-        await client.sites.deleteSites({}, secondSiteId);
-      } catch (err) {
-        console.log('Cleanup secondary site failed:', secondSiteId, err.message);
-      }
-    }
-
     if (testSiteId) {
       try {
         await client.sites.deleteSites({}, testSiteId);
@@ -243,6 +225,29 @@ describeIf(canRunIntegrationTests())('SitesManager Integration Tests', () => {
   });
 
   describe('changeGroupSite', () => {
+    let secondSiteId;
+    let movableGroupId;
+
+    afterEach(async () => {
+      if (movableGroupId) {
+        try {
+          await client.groups.deleteGroup({}, movableGroupId);
+        } catch (err) {
+          console.log('Cleanup movable group failed:', movableGroupId, err.message);
+        }
+        movableGroupId = null;
+      }
+
+      if (secondSiteId) {
+        try {
+          await client.sites.deleteSites({}, secondSiteId);
+        } catch (err) {
+          console.log('Cleanup secondary site failed:', secondSiteId, err.message);
+        }
+        secondSiteId = null;
+      }
+    });
+
     it('should move a group between sites', async () => {
       expect(testSiteId, 'testSiteId should be set by postSites test').toBeDefined();
 
