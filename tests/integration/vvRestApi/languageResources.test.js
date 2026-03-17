@@ -59,19 +59,13 @@ describeIf(canRunIntegrationTests())('LanguageResourcesManager Integration Tests
       // First get a valid area and language to use
       const areasResponse = await client.languageResources.getLanguageAreas({});
       const areasData = JSON.parse(areasResponse);
-
-      if (!areasData.data || areasData.data.length === 0) {
-        console.log('No language areas available, skipping exportLanguages test');
-        return;
-      }
+      expect(Array.isArray(areasData.data), 'getLanguageAreas should return an array').toBe(true);
+      expect(areasData.data.length, 'getLanguageAreas should return at least one area').toBeGreaterThan(0);
 
       const langsResponse = await client.languageResources.getLanguages({});
       const langsData = JSON.parse(langsResponse);
-
-      if (!langsData.data || langsData.data.length === 0) {
-        console.log('No languages available, skipping exportLanguages test');
-        return;
-      }
+      expect(Array.isArray(langsData.data), 'getLanguages should return an array').toBe(true);
+      expect(langsData.data.length, 'getLanguages should return at least one language').toBeGreaterThan(0);
 
       const area = areasData.data[0].name || areasData.data[0];
       const lang = langsData.data[0].code || langsData.data[0];
@@ -89,16 +83,10 @@ describeIf(canRunIntegrationTests())('LanguageResourcesManager Integration Tests
       const areasData = JSON.parse(areasResponse);
       const langsResponse = await client.languageResources.getLanguages({});
       const langsData = JSON.parse(langsResponse);
-
-      if (!areasData.data || areasData.data.length === 0) {
-        console.log('No language areas available, skipping importLanguages test');
-        return;
-      }
-
-      if (!langsData.data || langsData.data.length === 0) {
-        console.log('No languages available, skipping importLanguages test');
-        return;
-      }
+      expect(Array.isArray(areasData.data), 'getLanguageAreas should return an array').toBe(true);
+      expect(areasData.data.length, 'getLanguageAreas should return at least one area').toBeGreaterThan(0);
+      expect(Array.isArray(langsData.data), 'getLanguages should return an array').toBe(true);
+      expect(langsData.data.length, 'getLanguages should return at least one language').toBeGreaterThan(0);
 
       const area = areasData.data?.[0]?.name || areasData.data?.[0];
       const lang = langsData.data?.[0]?.code || langsData.data?.[0];
