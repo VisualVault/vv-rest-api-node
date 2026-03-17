@@ -26,7 +26,7 @@ describeIf(canRunIntegrationTests())('SitesManager Integration Tests', () => {
   afterAll(async () => {
     if (testSiteId) {
       try {
-        await client.sites.deleteSites({}, testSiteId);
+        await client.sites.deleteSite({}, testSiteId);
       } catch (err) {
         console.log('Cleanup primary site failed:', testSiteId, err.message);
       }
@@ -240,7 +240,7 @@ describeIf(canRunIntegrationTests())('SitesManager Integration Tests', () => {
 
       if (secondSiteId) {
         try {
-          await client.sites.deleteSites({}, secondSiteId);
+          await client.sites.deleteSite({}, secondSiteId);
         } catch (err) {
           console.log('Cleanup secondary site failed:', secondSiteId, err.message);
         }
@@ -279,11 +279,11 @@ describeIf(canRunIntegrationTests())('SitesManager Integration Tests', () => {
     });
   });
 
-  describe('deleteSites', () => {
+  describe('deleteSite', () => {
     it('should delete a site', async () => {
       const siteData = {
         name: `Delete Test Site ${Date.now()}`,
-        description: 'Site to verify deleteSites',
+        description: 'Site to verify deleteSite',
         siteType: 'Location'
       };
 
@@ -291,9 +291,9 @@ describeIf(canRunIntegrationTests())('SitesManager Integration Tests', () => {
       const createData = JSON.parse(createResponse);
       expect(createData.meta.status).toBe(200);
 
-      const deleteResponse = await client.sites.deleteSites({}, createData.data.id);
+      const deleteResponse = await client.sites.deleteSite({}, createData.data.id);
       const deleteData = JSON.parse(deleteResponse);
-      expect(deleteData.meta.status, 'deleteSites should return success status').toBe(200);
+      expect(deleteData.meta.status, 'deleteSite should return success status').toBe(200);
     });
   });
 });
