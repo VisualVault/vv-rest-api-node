@@ -130,27 +130,27 @@ describeIf(canRunIntegrationTests())('DocumentManager Integration Tests', () => 
       const criteriaList = [];
       const searchFolders = [{ folderID: testFolderId, path: '', includeChildrenFolders: true }];
       const excludeFolders = [];
-      const sortBy = 'fileLength';
-      const sortDirection = 'desc';
-      const page = 0;
-      const take = 10;
-      const archiveType = 0; // Active
-      const roleSecurity = false;
 
-      const response = await client.docApi.documents.search(
-        criteriaList, 
-        searchFolders, 
-        excludeFolders, 
-        sortBy, 
-        sortDirection, 
-        page, 
-        take, 
-        archiveType, 
-        roleSecurity
-      );
-      const data = JSON.parse(response);
-
-      console.log('search response:', JSON.stringify(data, null, 2));
+      // Poll for the document to appear in search results (index may lag behind creation)
+      let data;
+      const maxAttempts = 5;
+      for (let i = 0; i < maxAttempts; i++) {
+        const response = await client.docApi.documents.search(
+          criteriaList,
+          searchFolders,
+          excludeFolders,
+          'fileLength',
+          'desc',
+          0,
+          10,
+          0,     // Active
+          false  // roleSecurity
+        );
+        data = JSON.parse(response);
+        if (data.data?.documents?.length > 0) break;
+        console.log(`Search attempt ${i + 1}/${maxAttempts} returned no documents, retrying...`);
+        await new Promise(r => setTimeout(r, 2000));
+      }
 
       expect(data).toHaveProperty('meta');
       expect(data.meta.status, 'search should return success status').toBe(200);
