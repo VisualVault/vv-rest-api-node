@@ -1,0 +1,85 @@
+name: Publish Beta to npm
+
+on:
+  push:
+    branches: [main, ghactions]
+    paths: [package.json]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check for beta version change
+        id: check_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $VERSION"
+
+          if [[ ! "$VERSION" =~ -beta\. ]]; then
+            echo "Version '$VERSION' is not a beta version. Skipping publish."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual trigger — publishing $VERSION"
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PREV_VERSION=$(git show HEAD~1:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version")
+          echo "Previous version: $PREV_VERSION"
+
+          if [[ "$VERSION" == "$PREV_VERSION" ]]; then
+            echo "Version unchanged. Skipping publish."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Beta version changed: $PREV_VERSION -> $VERSION"
+          echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node.js
+        if: steps.check_version.outputs.should_publish == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        if: steps.check_version.outputs.should_publish == 'true'
+        run: npm ci
+
+      - name: Build
+        if: steps.check_version.outputs.should_publish == 'true'
+        run: npm run build
+
+      - name: Verify build output
+        if: steps.check_version.outputs.should_publish == 'true'
+        run: |
+          test -f dist/index.js || (echo "Build failed: dist/index.js not found" && exit 1)
+          test -f dist/index.cjs || (echo "Build failed: dist/index.cjs not found" && exit 1)
+          test -f dist/index.d.ts || (echo "Build failed: dist/index.d.ts not found" && exit 1)
+          test -f dist/config.yml || (echo "Build failed: dist/config.yml not found" && exit 1)
+          echo "Build output verified successfully."
+
+      - name: Publish to npm with beta tag
+        if: steps.check_version.outputs.should_publish == 'true'
+        run: npm publish --tag beta --provenance --access public --dry-run
+
+      - name: Log published version
+        if: steps.check_version.outputs.should_publish == 'true'
+        run: echo "Successfully published visualvault-api@${{ steps.check_version.outputs.version }} with dist-tag 'beta'"

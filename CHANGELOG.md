@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Proper .npmignore to reduce package size
 - Vitest test framework
 - CurrentUserManager
+- Add GetDocumentWebDavUrl and GetDocumentWopiUrl methods
 
 ### Changed
 - **BREAKING**: Updated client so that DocApi and ObjectsApi methods have individual namespaces
