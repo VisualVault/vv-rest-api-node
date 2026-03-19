@@ -524,7 +524,7 @@ describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () =>
         const defaultLinkData = JSON.parse(defaultLinkResponse);
         expect(defaultLinkData.meta.status, 'getDocumentDefaultLink should return success status').toBe(200);
       } finally {
-        await client.documents.deleteDocument({}, revisionId);
+        await client.documents.deleteDocument({}, documentId);
       }
     });
   });

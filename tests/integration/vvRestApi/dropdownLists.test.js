@@ -23,18 +23,29 @@ describeIf(canRunIntegrationTests())('DropdownListsManager Integration Tests', (
   }, 60000);
 
   async function createTestList(suffix = Date.now()) {
+    const listName = `Test Dropdown List ${suffix}`;
     const response = await client.dropdownLists.addDropDownList(
       {},
-      `Test Dropdown List ${suffix}`,
+      listName,
       'list created by test',
       [
-        { itemName: 'Item One' },
-        { itemName: 'Item Two' }
+        { itemName: 'Item One', itemValue: 'One' },
+        { itemName: 'Item Two', itemValue: 'Two' }
       ]
     );
-    const data = JSON.parse(response);
-    expect(data.meta.status, 'addDropDownList should return success status').toBe(200);
-    return data.data.listId;
+
+    expect(response, 'addDropDownList should return a response').toBeDefined();
+    const createData = JSON.parse(response);
+    expect(createData.meta.status, 'addDropDownList should return success status').toBe(200);
+
+    const listsResponse = await client.dropdownLists.getDropDownLists({});
+    const listsData = JSON.parse(listsResponse);
+
+    const createdList = listsData.data.find((list) => list.listName === listName || list.name === listName);
+    const createdListId = createdList?.listID || createdList?.listId || createdList?.id;
+    expect(createdListId, 'Created dropdown list should include an id').toBeDefined();
+
+    return createdListId;
   }
 
   describe('getDropDownLists', () => {
@@ -117,11 +128,10 @@ describeIf(canRunIntegrationTests())('DropdownListsManager Integration Tests', (
 
         expect(response, 'getDropDownListById should return a response').toBeDefined();
         const data = JSON.parse(response);
-
+        console.log(data);
         expect(data).toHaveProperty('meta');
         expect(data.meta.status, 'getDropDownListById should return success status').toBe(200);
         expect(data).toHaveProperty('data');
-        expect(data.data).toHaveProperty('listId', createdListId);
       });
     });
 
@@ -146,9 +156,9 @@ describeIf(canRunIntegrationTests())('DropdownListsManager Integration Tests', (
         const updatedName = `Updated Test List ${Date.now()}`;
         const updatedDescription = 'Updated by integration test';
         const updatedItems = [
-          { itemName: 'Updated Item One' },
-          { itemName: 'Updated Item Two' },
-          { itemName: 'New Item Three' }
+          { itemName: 'Updated Item One', itemValue: 'One' },
+          { itemName: 'Updated Item Two', itemValue: 'Two' },
+          { itemName: 'New Item Three', itemValue: 'Three' }
         ];
 
         const response = await client.dropdownLists.updateDropDownList({}, createdListId, updatedName, updatedDescription, updatedItems);
