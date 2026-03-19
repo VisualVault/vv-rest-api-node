@@ -111,7 +111,18 @@ jobs:
         run: npm ci
 
       - name: Create .env file
-        run: echo "${{ secrets.ENV_FILE }}" > .env
+        run: |
+          cat <<'EOF' > .env
+          VV_CLIENT_ID=${{ secrets.VV_CLIENT_ID }}
+          VV_CLIENT_SECRET=${{ secrets.VV_CLIENT_SECRET }}
+          VV_USERNAME=${{ secrets.VV_USERNAME }}
+          VV_PASSWORD=${{ secrets.VV_PASSWORD }}
+          VV_BASE_URL=${{ secrets.VV_BASE_URL }}
+          VV_CUSTOMER_ALIAS=${{ secrets.VV_CUSTOMER_ALIAS }}
+          VV_DATABASE_ALIAS=${{ secrets.VV_DATABASE_ALIAS }}
+          VV_AUDIENCE=${{ secrets.VV_AUDIENCE }}
+          EOF
+          echo "${{ vars.ENV_TEST_VARS }}" >> .env
 
       - name: Run integration tests
         run: npm test
