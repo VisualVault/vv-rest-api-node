@@ -71,6 +71,8 @@ ResourceUri:
   ImportLanguages: /resource/customerLocalization/importCsv
   Reports: /reports
   DropDownLists: /lists
+  DropDownListsId: /lists/{id}
+  DropDownListsIdItems: /lists/{id}/items
   DocumentTypes: /documenttypes
   SavedSearches: /savedsearches
   DocumentFields: /documentfields
