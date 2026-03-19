@@ -2,6 +2,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { getTestConfig, canRunIntegrationTests, describeIf } from '../setup.js';
 import { Authorize } from '../../../lib/VVRestApi.js';
 
+const skipImportLanguagesTest = !process.env.VV_ENABLE_IMPORT_LANGUAGES_TEST;
+
 describeIf(canRunIntegrationTests())('LanguageResourcesManager Integration Tests', () => {
   let config;
   let client;
@@ -78,7 +80,8 @@ describeIf(canRunIntegrationTests())('LanguageResourcesManager Integration Tests
   });
 
   describe('importLanguages', () => {
-    it('should import languages from exported language data', async () => {
+    // SKIPPED - import endpoint currently failing due to api issue
+    it.skipIf(skipImportLanguagesTest)('should import languages from exported language data', async () => {
       const areasResponse = await client.languageResources.getLanguageAreas({});
       const areasData = JSON.parse(areasResponse);
       const langsResponse = await client.languageResources.getLanguages({});
