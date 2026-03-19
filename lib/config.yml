@@ -1,5 +1,6 @@
 # VisualVault URIs
 ApiUri: /api/v1/{custalias}/{custdbalias}
+BaseApiUri: /api/v1
 FormsApiUri: /api/v1
 DocApiUri: /api/v1
 NotificationsApiUri: /api/v1

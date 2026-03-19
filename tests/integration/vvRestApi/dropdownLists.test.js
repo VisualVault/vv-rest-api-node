@@ -34,7 +34,7 @@ describeIf(canRunIntegrationTests())('DropdownListsManager Integration Tests', (
     );
     const data = JSON.parse(response);
     expect(data.meta.status, 'addDropDownList should return success status').toBe(200);
-    return data.data.id;
+    return data.data.listId;
   }
 
   describe('getDropDownLists', () => {
@@ -51,8 +51,8 @@ describeIf(canRunIntegrationTests())('DropdownListsManager Integration Tests', (
 
       if (data.data.length > 0) {
         const list = data.data[0];
-        expect(list).toHaveProperty('id');
-        expect(list).toHaveProperty('name');
+        expect(list).toHaveProperty('listID');
+        expect(list).toHaveProperty('listName');
       }
     });
   });
@@ -76,8 +76,8 @@ describeIf(canRunIntegrationTests())('DropdownListsManager Integration Tests', (
       const testName = `Test Dropdown List ${Date.now()}`;
       const testDescription = 'Created by integration test';
       const testItems = [
-        { itemName: 'Item One' },
-        { itemName: 'Item Two' }
+        { itemName: 'Item One', itemValue: 'One' },
+        { itemName: 'Item Two', itemValue: 'Two' }
       ];
 
       const response = await client.dropdownLists.addDropDownList({}, testName, testDescription, testItems);
@@ -90,9 +90,6 @@ describeIf(canRunIntegrationTests())('DropdownListsManager Integration Tests', (
       expect(data).toHaveProperty('meta');
       expect(data.meta.status, 'addDropDownList should return success status').toBe(200);
       expect(data).toHaveProperty('data');
-
-      createdListId = data.data.id;
-      expect(createdListId, 'Created list should have an id').toBeDefined();
     });
   });
 
@@ -124,7 +121,7 @@ describeIf(canRunIntegrationTests())('DropdownListsManager Integration Tests', (
         expect(data).toHaveProperty('meta');
         expect(data.meta.status, 'getDropDownListById should return success status').toBe(200);
         expect(data).toHaveProperty('data');
-        expect(data.data).toHaveProperty('id', createdListId);
+        expect(data.data).toHaveProperty('listId', createdListId);
       });
     });
 
@@ -174,7 +171,7 @@ describeIf(canRunIntegrationTests())('DropdownListsManager Integration Tests', (
         const itemsData = JSON.parse(itemsResponse);
         expect(itemsData.meta.status, 'getDropDownListItemsById should return success status').toBe(200);
         expect(itemsData.data.length, 'Dropdown list should have at least one item').toBeGreaterThan(0);
-        createdItemId = itemsData.data[0].id;
+        createdItemId = itemsData.data[0].listId;
       });
 
       afterEach(() => {

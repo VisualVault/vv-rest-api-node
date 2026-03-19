@@ -67,8 +67,8 @@ describeIf(canRunIntegrationTests())('LanguageResourcesManager Integration Tests
       expect(Array.isArray(langsData.data), 'getLanguages should return an array').toBe(true);
       expect(langsData.data.length, 'getLanguages should return at least one language').toBeGreaterThan(0);
 
-      const area = areasData.data[0].name || areasData.data[0];
-      const lang = langsData.data[0].code || langsData.data[0];
+      const area = areasData.data[0].displayName || areasData.data[0];
+      const lang = langsData.data[0].language || langsData.data[0];
 
       const response = await client.languageResources.exportLanguages({ area, lang });
 
@@ -88,8 +88,8 @@ describeIf(canRunIntegrationTests())('LanguageResourcesManager Integration Tests
       expect(Array.isArray(langsData.data), 'getLanguages should return an array').toBe(true);
       expect(langsData.data.length, 'getLanguages should return at least one language').toBeGreaterThan(0);
 
-      const area = areasData.data?.[0]?.name || areasData.data?.[0];
-      const lang = langsData.data?.[0]?.code || langsData.data?.[0];
+      const area = areasData.data?.[0]?.displayName || areasData.data?.[0];
+      const lang = langsData.data?.[0]?.language || langsData.data?.[0];
 
       const exported = await client.languageResources.exportLanguages({ area, lang });
 

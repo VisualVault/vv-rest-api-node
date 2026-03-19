@@ -476,8 +476,8 @@ describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () =>
       expect(Array.isArray(data.data), 'data should be an array').toBe(true);
 
       if (data.data.length > 0) {
-        const savedSearchId = data.data[0].id;
-        const fieldsResponse = await client.documents.getSavedSearchIndexFields({}, savedSearchId);
+        const savedSearch = data.data.find(search => !!search.asid);
+        const fieldsResponse = await client.documents.getSavedSearchIndexFields({}, savedSearch.asid);
         const fieldsData = JSON.parse(fieldsResponse);
 
         expect(fieldsData).toHaveProperty('meta');
@@ -513,11 +513,10 @@ describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () =>
 
       const createResponse = await client.documents.postDoc(docData);
       const createData = JSON.parse(createResponse);
-      const revisionId = createData.data.id;
       const documentId = createData.data.documentId;
 
       try {
-        const indexFieldsResponse = await client.documents.getDocumentIndexFields({}, revisionId);
+        const indexFieldsResponse = await client.documents.getDocumentIndexFields({}, documentId);
         const indexFieldsData = JSON.parse(indexFieldsResponse);
         expect(indexFieldsData.meta.status, 'getDocumentIndexFields should return success status').toBe(200);
 
@@ -540,8 +539,8 @@ describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () =>
         return;
       }
 
-      const savedSearchId = searchesData.data[0].id;
-      const response = await client.documents.getSavedSearchDocuments({ q: '' }, savedSearchId);
+      const savedSearch = searchesData.data.find(search => !!search.asid);
+      const response = await client.documents.getSavedSearchDocuments({ q: '' }, savedSearch.asid);
       const data = JSON.parse(response);
 
       expect(data).toHaveProperty('meta');
