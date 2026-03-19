@@ -2,7 +2,7 @@ name: Publish Beta to npm
 
 on:
   push:
-    branches: [main]
+    branches: [main, ghactions]
     paths: [package.json]
   workflow_dispatch:
 
@@ -78,7 +78,7 @@ jobs:
 
       - name: Publish to npm with beta tag
         if: steps.check_version.outputs.should_publish == 'true'
-        run: npm publish --tag beta --provenance --access public
+        run: npm publish --tag beta --provenance --access public --dry-run
 
       - name: Log published version
         if: steps.check_version.outputs.should_publish == 'true'
