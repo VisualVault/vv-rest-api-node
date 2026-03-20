@@ -1,0 +1,3 @@
+# Require review from CI owners for workflow changes
+/.github/workflows/ @VisualVault/core-team-architects
+/.github/CODEOWNERS @VisualVault/core-team-architects

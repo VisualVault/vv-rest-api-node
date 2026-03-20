@@ -1,0 +1,157 @@
+name: Publish to npm
+
+on:
+  push:
+    branches: [main]
+    paths: [package.json]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.version.outputs.should_publish }}
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect version change and release type
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $VERSION"
+
+          # Determine dist-tag
+          if [[ "$VERSION" =~ -beta\. ]]; then
+            TAG="beta"
+          else
+            TAG="latest"
+          fi
+          echo "Dist-tag: $TAG"
+
+          # Manual trigger always publishes
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Manual trigger — publishing $VERSION"
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Check if version actually changed
+          PREV_VERSION=$(git show HEAD~1:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version")
+          echo "Previous version: $PREV_VERSION"
+
+          if [[ "$VERSION" == "$PREV_VERSION" ]]; then
+            echo "Version unchanged. Skipping publish."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Version changed: $PREV_VERSION -> $VERSION ($TAG)"
+          echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: check
+    if: needs.check.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          test -f dist/index.js || (echo "Build failed: dist/index.js not found" && exit 1)
+          test -f dist/index.cjs || (echo "Build failed: dist/index.cjs not found" && exit 1)
+          test -f dist/index.d.ts || (echo "Build failed: dist/index.d.ts not found" && exit 1)
+          test -f dist/config.yml || (echo "Build failed: dist/config.yml not found" && exit 1)
+          echo "Build output verified successfully."
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  test:
+    needs: check
+    if: needs.check.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env file
+        run: |
+          cat <<'EOF' > .env
+          VV_CLIENT_ID=${{ secrets.VV_CLIENT_ID }}
+          VV_CLIENT_SECRET=${{ secrets.VV_CLIENT_SECRET }}
+          VV_USERNAME=${{ secrets.VV_USERNAME }}
+          VV_PASSWORD=${{ secrets.VV_PASSWORD }}
+          VV_BASE_URL=${{ secrets.VV_BASE_URL }}
+          VV_CUSTOMER_ALIAS=${{ secrets.VV_CUSTOMER_ALIAS }}
+          VV_DATABASE_ALIAS=${{ secrets.VV_DATABASE_ALIAS }}
+          VV_AUDIENCE=${{ secrets.VV_AUDIENCE }}
+          EOF
+          echo "${{ vars.ENV_TEST_VARS }}" >> .env
+
+      - name: Run integration tests
+        run: npm test
+
+  publish:
+    needs: [check, build, test]
+    if: needs.check.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to npm
+        run: npm publish --tag ${{ needs.check.outputs.tag }} --provenance --access public
+
+      - name: Log published version
+        run: echo "Successfully published visualvault-api@${{ needs.check.outputs.version }} with dist-tag '${{ needs.check.outputs.tag }}'"
