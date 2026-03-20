@@ -5,6 +5,10 @@ import { Authorize } from '../../../lib/VVRestApi.js';
 
 // Conditional test runner - requires a folder with index fields configured
 const skipIndexFieldTest = !process.env.VV_TEST_INDEX_FOLDER_ID;
+// Conditional test runner - enables createDocumentType
+const skipDocumentTypeCreate = !process.env.VV_ENABLE_DOCUMENT_TYPE_CREATE_TEST;
+// Conditional test runner - requires a folder with a document configured
+const skipDocumentZipTests = !process.env.VV_TEST_DOCUMENT_DH_ID;
 
 describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () => {
   let config;
@@ -437,6 +441,132 @@ describeIf(canRunIntegrationTests())('DocumentsManager Integration Tests', () =>
       expect(data).toHaveProperty('meta');
       expect(data.meta.status, 'getDocumentWopiUrl should return success status').toBe(200);
       expect(data).toHaveProperty('data');
+    });
+  });
+
+  describe('getDocumentTypes', () => {
+    it('should return available document types', async () => {
+      const response = await client.documents.getDocumentTypes({});
+      const data = JSON.parse(response);
+
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.status, 'getDocumentTypes should return success status').toBe(200);
+      expect(Array.isArray(data.data), 'data should be an array').toBe(true);
+    });
+  });
+
+  describe('createDocumentType', () => {
+    // SKIPPED: There is no API endpoint to delete/undo a created document type - enable only when needed by supplying env vars
+    it.skipIf(skipDocumentTypeCreate)('should create a document type', async () => {
+      const response = await client.documents.createDocumentType({}, `Type ${Date.now()}`);
+      const data = JSON.parse(response);
+
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.status, 'createDocumentType should return success status').toBe(200);
+    });
+  });
+
+  describe('getSavedSearches / getSavedSearchIndexFields', () => {
+    it('should return saved searches and index fields for one search when available', async () => {
+      const response = await client.documents.getSavedSearches({ includeDefaults: true });
+      const data = JSON.parse(response);
+
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.status, 'getSavedSearches should return success status').toBe(200);
+      expect(Array.isArray(data.data), 'data should be an array').toBe(true);
+
+      if (data.data.length > 0) {
+        const savedSearch = data.data.find(search => !!search.asid);
+        const fieldsResponse = await client.documents.getSavedSearchIndexFields({}, savedSearch.asid);
+        const fieldsData = JSON.parse(fieldsResponse);
+
+        expect(fieldsData).toHaveProperty('meta');
+        expect(fieldsData.meta.status, 'getSavedSearchIndexFields should return success status').toBe(200);
+      }
+    });
+  });
+
+  describe('document discovery methods', () => {
+    it('should return document fields, last documents, and frequent documents', async () => {
+      const fieldsResponse = await client.documents.getDocumentFields({});
+      const fieldsData = JSON.parse(fieldsResponse);
+      expect(fieldsData.meta.status, 'getDocumentFields should return success status').toBe(200);
+
+      const lastResponse = await client.documents.getLastDocuments({ useDocApi: false });
+      const lastData = JSON.parse(lastResponse);
+      expect(lastData.meta.status, 'getLastDocuments should return success status').toBe(200);
+
+      const frequentResponse = await client.documents.getFrequentDocuments({ useDocApi: false });
+      const frequentData = JSON.parse(frequentResponse);
+      expect(frequentData.meta.status, 'getFrequentDocuments should return success status').toBe(200);
+    });
+  });
+
+  describe('getDocumentIndexFields / getDocumentDefaultLink', () => {
+    it('should return index fields and default link for a created document', async () => {
+      const docData = {
+        folderId: testFolderId,
+        name: `Metadata Test Document ${Date.now()}`,
+        description: 'Document for metadata method tests',
+        documentState: 1
+      };
+
+      const createResponse = await client.documents.postDoc(docData);
+      const createData = JSON.parse(createResponse);
+      const documentId = createData.data.documentId;
+
+      try {
+        const indexFieldsResponse = await client.documents.getDocumentIndexFields({}, documentId);
+        const indexFieldsData = JSON.parse(indexFieldsResponse);
+        expect(indexFieldsData.meta.status, 'getDocumentIndexFields should return success status').toBe(200);
+
+        const defaultLinkResponse = await client.documents.getDocumentDefaultLink({}, documentId);
+        const defaultLinkData = JSON.parse(defaultLinkResponse);
+        expect(defaultLinkData.meta.status, 'getDocumentDefaultLink should return success status').toBe(200);
+      } finally {
+        await client.documents.deleteDocument({}, documentId);
+      }
+    });
+  });
+
+  describe('getSavedSearchDocuments', () => {
+    it('should return documents for a saved search when one exists', async () => {
+      const searchesResponse = await client.documents.getSavedSearches({ includeDefaults: true });
+      const searchesData = JSON.parse(searchesResponse);
+
+      if (!searchesData.data || searchesData.data.length === 0) {
+        console.log('No saved searches available, skipping getSavedSearchDocuments assertions');
+        return;
+      }
+
+      const savedSearch = searchesData.data.find(search => !!search.asid);
+      const response = await client.documents.getSavedSearchDocuments({ q: '' }, savedSearch.asid);
+      const data = JSON.parse(response);
+
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.status, 'getSavedSearchDocuments should return success status').toBe(200);
+    });
+  });
+
+  describe('createDocumentZipFile / getDocumentZipFileStatus', () => {
+    // SKIPPED: Requires a document DH id - enable supplying env var
+    it.skipIf(skipDocumentZipTests)('should create a zip job and query its status', async () => {
+      const documentDhId = config.testDocumentDhId;
+
+      const createResponse = await client.documents.createDocumentZipFile({}, [documentDhId]);
+      const createData = JSON.parse(createResponse);
+
+      expect(createData).toHaveProperty('meta');
+      expect(createData.meta.status, 'createDocumentZipFile should return success status').toBe(200);
+
+      const downloadKey = createData.data?.downloadKey;
+      expect(downloadKey, 'zip operation should return a download key').toBeDefined();
+
+      const statusResponse = await client.documents.getDocumentZipFileStatus({}, downloadKey);
+      const statusData = JSON.parse(statusResponse);
+
+      expect(statusData).toHaveProperty('meta');
+      expect(statusData.meta.status, 'getDocumentZipFileStatus should return success status').toBe(200);
     });
   });
 

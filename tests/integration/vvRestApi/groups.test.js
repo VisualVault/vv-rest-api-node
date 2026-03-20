@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { getTestConfig, canRunIntegrationTests, describeIf } from '../setup.js';
 import { Authorize } from '../../../lib/VVRestApi.js';
 
@@ -7,7 +7,7 @@ describeIf(canRunIntegrationTests())('GroupsManager Integration Tests', () => {
   let client;
   let testGroupId; // Discovered from getGroups
   let testUserId; // Discovered from getGroupsUsers
-  let createdGroupId; // Track group we create for cleanup
+  let testSiteId;
 
   beforeAll(async () => {
     config = getTestConfig();
@@ -23,15 +23,12 @@ describeIf(canRunIntegrationTests())('GroupsManager Integration Tests', () => {
       config.customerAlias,
       config.databaseAlias
     );
-  }, 60000); // Allow up to 60s for authentication
 
-  afterAll(async () => {
-    // Note: No deleteGroup method available in the API
-    // Created test groups will persist but are reused on subsequent runs
-    if (createdGroupId) {
-      console.log('Note: Test group was created:', createdGroupId, '(no delete API available, will be reused)');
-    }
-  });
+    const sitesResponse = await client.sites.getSites({});
+    const sitesData = JSON.parse(sitesResponse);
+    testSiteId = sitesData.data?.[0]?.id;
+    expect(testSiteId, 'testSiteId should be discovered from getSites').toBeDefined();
+  }, 60000);
 
   describe('getGroups', () => {
     it('should return list of all groups', async () => {
@@ -55,6 +52,150 @@ describeIf(canRunIntegrationTests())('GroupsManager Integration Tests', () => {
       expect(group).toHaveProperty('id');
       expect(group).toHaveProperty('name');
       expect(group).toHaveProperty('dataType', 'Group');
+    });
+  });
+
+  describe('addGroup', () => {
+    let createdGroupId;
+
+    afterEach(async () => {
+      if (createdGroupId) {
+        try {
+          await client.groups.deleteGroup({}, createdGroupId);
+        } catch (err) {
+          console.log('Cleanup group failed:', createdGroupId, err.message);
+        }
+        createdGroupId = null;
+      }
+    });
+
+    it('should create a group', async () => {
+      expect(testSiteId, 'testSiteId should be discovered from getSites').toBeDefined();
+
+      const groupName = `Test Group ${Date.now()}`;
+      const createPayload = {
+        siteId: testSiteId,
+        name: groupName,
+        description: 'Created by test'
+      };
+
+      const createResponse = await client.groups.addGroup({}, createPayload);
+      const createData = JSON.parse(createResponse);
+
+      expect(createData.meta.status, 'addGroup should return success status').toBe(200);
+      createdGroupId = createData.data.id;
+      expect(createdGroupId).toBeDefined();
+    });
+  });
+
+  describe('getGroupById', () => {
+    let createdGroupId;
+
+    beforeEach(async () => {
+      const createPayload = {
+        siteId: testSiteId,
+        name: `Test Group ${Date.now()}`,
+        description: 'Created for getGroupById test'
+      };
+      const createResponse = await client.groups.addGroup({}, createPayload);
+      const createData = JSON.parse(createResponse);
+      expect(createData.meta.status, 'addGroup should return success status').toBe(200);
+      createdGroupId = createData.data.id;
+    });
+
+    afterEach(async () => {
+      if (createdGroupId) {
+        try {
+          await client.groups.deleteGroup({}, createdGroupId);
+        } catch (err) {
+          console.log('Cleanup group failed:', createdGroupId, err.message);
+        }
+        createdGroupId = null;
+      }
+    });
+
+    it('should get an existing group by id', async () => {
+      const getResponse = await client.groups.getGroupById({}, createdGroupId);
+      const getData = JSON.parse(getResponse);
+
+      expect(getData.meta.status, 'getGroupById should return success status').toBe(200);
+    });
+  });
+
+  describe('updateGroup', () => {
+    let createdGroupId;
+
+    beforeEach(async () => {
+      const createPayload = {
+        siteId: testSiteId,
+        name: `Test Group ${Date.now()}`,
+        description: 'Created for updateGroup test'
+      };
+      const createResponse = await client.groups.addGroup({}, createPayload);
+      const createData = JSON.parse(createResponse);
+      expect(createData.meta.status, 'addGroup should return success status').toBe(200);
+      createdGroupId = createData.data.id;
+    });
+
+    afterEach(async () => {
+      if (createdGroupId) {
+        try {
+          await client.groups.deleteGroup({}, createdGroupId);
+        } catch (err) {
+          console.log('Cleanup group failed:', createdGroupId, err.message);
+        }
+        createdGroupId = null;
+      }
+    });
+
+    it('should update an existing group', async () => {
+      expect(testSiteId, 'testSiteId should be discovered from getSites').toBeDefined();
+
+      const updatedName = `Updated Group ${Date.now()}`;
+      const updatePayload = {
+        siteId: testSiteId,
+        name: updatedName,
+        description: 'Updated by test'
+      };
+
+      const updateResponse = await client.groups.updateGroup({}, createdGroupId, updatePayload);
+      const updateData = JSON.parse(updateResponse);
+      expect(updateData.meta.status, 'updateGroup should return success status').toBe(200);
+    });
+  });
+
+  describe('deleteGroup', () => {
+    let createdGroupId;
+
+    beforeEach(async () => {
+      const createPayload = {
+        siteId: testSiteId,
+        name: `Test Group ${Date.now()}`,
+        description: 'Created for deleteGroup test'
+      };
+      const createResponse = await client.groups.addGroup({}, createPayload);
+      const createData = JSON.parse(createResponse);
+      expect(createData.meta.status, 'addGroup should return success status').toBe(200);
+      createdGroupId = createData.data.id;
+    });
+
+    afterEach(async () => {
+      if (createdGroupId) {
+        try {
+          await client.groups.deleteGroup({}, createdGroupId);
+        } catch (err) {
+          console.log('Cleanup group failed:', createdGroupId, err.message);
+        }
+        createdGroupId = null;
+      }
+    });
+
+    it('should delete an existing group', async () => {
+      const deleteResponse = await client.groups.deleteGroup({}, createdGroupId);
+      const deleteData = JSON.parse(deleteResponse);
+      expect(deleteData.meta.status, 'deleteGroup should return success status').toBe(200);
+
+      createdGroupId = null;
     });
   });
 
@@ -103,6 +244,19 @@ describeIf(canRunIntegrationTests())('GroupsManager Integration Tests', () => {
   });
 
   describe('addUserToGroup / removeUserFromGroup', () => {
+    let createdGroupId;
+
+    afterEach(async () => {
+      if (createdGroupId) {
+        try {
+          await client.groups.deleteGroup({}, createdGroupId);
+        } catch (err) {
+          console.log('Cleanup group failed:', createdGroupId, err.message);
+        }
+        createdGroupId = null;
+      }
+    });
+
     it('should add and remove a user from a group', async () => {
       // Get the Home site (where users typically are)
       const sitesResponse = await client.sites.getSites({});
@@ -132,7 +286,7 @@ describeIf(canRunIntegrationTests())('GroupsManager Integration Tests', () => {
 
         expect(createData.meta.status, 'Should be able to create test group').toBe(200);
         testGroup = createData.data;
-        createdGroupId = testGroup.id; // Track for cleanup
+        createdGroupId = testGroup.id;
         console.log('Created test group on Home site:', testGroup.id);
       }
 

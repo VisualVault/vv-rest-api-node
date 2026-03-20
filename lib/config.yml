@@ -1,5 +1,6 @@
 # VisualVault URIs
 ApiUri: /api/v1/{custalias}/{custdbalias}
+BaseApiUri: /api/v1
 FormsApiUri: /api/v1
 DocApiUri: /api/v1
 NotificationsApiUri: /api/v1
@@ -55,9 +56,34 @@ ResourceUri:
   UsersIdUserId: /users/{id}/userId
   UsersMe: /users/me
   GetGroups: /groups
+  GroupById: /groups/{id}
+  AddGroup: /groups
+  UpdateGroup: /groups/{id}
+  DeleteGroup: /groups/{id}
   Groups: /sites/{id}/groups
+  SiteGroupById: /sites/{siteId}/groups/{groupId}
   GroupsUsers: /groups/{id}/users
   GroupsAddUser: /groups/{groupId}/users/{userId}
+  SiteById: /sites/{id}
+  ChangeGroupSite: /sites/changegroupsite
+  LanguageAreas: /resource/area
+  Languages: /resource/language
+  ExportLanguages: /resource/customerLocalization/exportCsv
+  ImportLanguages: /resource/customerLocalization/importCsv
+  Reports: /reports
+  DropDownLists: /lists
+  DropDownListsId: /lists/{id}
+  DropDownListsIdItems: /lists/{id}/items
+  DocumentTypes: /documenttypes
+  SavedSearches: /savedsearches
+  DocumentFields: /documentfields
+  SavedSearchIndexFields: /savedSearchIndexFields
+  LastDocuments: /lastdocuments
+  FrequentDocuments: /frequentdocuments
+  SavedSearchDocuments: /savedsearchdocuments/{savedSearchId}
+  DocumentDefaultAction: /documentDefaultAction/{documentId}
+  CreateDocumentZipFile: /documents/CreateDocumentZipFile
+  GetDocumentZipFileStatus: /documents/GetDocumentZipFileStatus
   Folders: /folders
   FoldersId: /folders/{id}
   FoldersCopy: /folders/copy

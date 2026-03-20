@@ -26,6 +26,20 @@ describeIf(canRunIntegrationTests())('ReportsManager Integration Tests', () => {
     );
   }, 60000);
 
+  describe('getReports', () => {
+    it('should return list of reports', async () => {
+      const response = await client.reports.getReports({});
+
+      expect(response, 'getReports should return a response').toBeDefined();
+      const data = JSON.parse(response);
+
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.status, 'getReports should return success status').toBe(200);
+      expect(data).toHaveProperty('data');
+      expect(Array.isArray(data.data), 'data should be an array').toBe(true);
+    });
+  });
+
   describe('getReportPDF', () => {
     // Requires VV_TEST_REPORT_ID - note: this functionality is older and may not be commonly used
     it.skipIf(skipReportTest)('should return PDF for a report', async () => {
