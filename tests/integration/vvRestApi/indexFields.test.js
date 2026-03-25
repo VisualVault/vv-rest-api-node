@@ -264,7 +264,7 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
     });
   });
 
-  describe('putIndexFieldFolder', () => {
+  describe('addIndexFieldToFolder', () => {
     let createdIndexFieldId;
 
     beforeEach(async () => {
@@ -294,7 +294,7 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
         try {
           await client.indexFields.deleteIndexField({}, createdIndexFieldId);
         } catch (error) {
-          console.warn('Cleanup putIndexFieldFolder test field failed:', error.message);
+          console.warn('Cleanup addIndexFieldToFolder test field failed:', error.message);
         }
         createdIndexFieldId = null;
       }
@@ -306,15 +306,15 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
       expect(folderId, 'Test index folder ID is required').toBeDefined();
       expect(createdIndexFieldId, 'Created index field id should be defined').toBeDefined();
 
-      const response = await client.indexFields.putIndexFieldFolder(createdIndexFieldId, folderId);
+      const response = await client.indexFields.addIndexFieldToFolder(createdIndexFieldId, folderId);
 
-      expect(response, 'putIndexFieldFolder should return a response').toBeDefined();
+      expect(response, 'addIndexFieldToFolder should return a response').toBeDefined();
       const data = JSON.parse(response);
 
-      console.log('putIndexFieldFolder response:', JSON.stringify(data, null, 2));
+      console.log('addIndexFieldToFolder response:', JSON.stringify(data, null, 2));
 
       expect(data).toHaveProperty('meta');
-      expect(data.meta.status, 'putIndexFieldFolder should return success status').toBe(200);
+      expect(data.meta.status, 'addIndexFieldToFolder should return success status').toBe(200);
       expect(data).toHaveProperty('data');
 
       const folderFieldsResponse = await client.library.getFolderIndexFields({}, folderId);
