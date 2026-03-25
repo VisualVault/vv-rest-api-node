@@ -263,4 +263,73 @@ describeIf(canRunIntegrationTests())('IndexFieldsManager Integration Tests', () 
       createdIndexFieldId = null;
     });
   });
+
+  describe('addIndexFieldToFolder', () => {
+    let createdIndexFieldId;
+
+    beforeEach(async () => {
+      if (skipIndexFieldTest) {
+        return;
+      }
+
+      const createResponse = await client.indexFields.createIndexField({}, {
+        fieldType: 'Text',
+        label: `Field ${Date.now()}`,
+        description: 'Created for putIndexFieldFolder test',
+        required: false,
+        connectionId: null,
+        queryId: null,
+        queryDisplayField: null,
+        queryValueField: null,
+        dropDownListId: null,
+        defaultValue: null
+      });
+      const createData = JSON.parse(createResponse);
+      expect(createData.meta.status, 'createIndexField should return success status').toBe(200);
+      createdIndexFieldId = createData.data?.id;
+    });
+
+    afterEach(async () => {
+      if (createdIndexFieldId) {
+        try {
+          await client.indexFields.deleteIndexField({}, createdIndexFieldId);
+        } catch (error) {
+          console.warn('Cleanup addIndexFieldToFolder test field failed:', error.message);
+        }
+        createdIndexFieldId = null;
+      }
+    });
+
+    it.skipIf(skipIndexFieldTest)('should add an index field to a folder', async () => {
+      const folderId = config.testIndexFolderId;
+
+      expect(folderId, 'Test index folder ID is required').toBeDefined();
+      expect(createdIndexFieldId, 'Created index field id should be defined').toBeDefined();
+
+      const response = await client.indexFields.addIndexFieldToFolder(createdIndexFieldId, folderId);
+
+      expect(response, 'addIndexFieldToFolder should return a response').toBeDefined();
+      const data = JSON.parse(response);
+
+      console.log('addIndexFieldToFolder response:', JSON.stringify(data, null, 2));
+
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.status, 'addIndexFieldToFolder should return success status').toBe(200);
+      expect(data).toHaveProperty('data');
+
+      const folderFieldsResponse = await client.library.getFolderIndexFields({}, folderId);
+      const folderFieldsData = JSON.parse(folderFieldsResponse);
+
+      expect(folderFieldsData.meta.status, 'getFolderIndexFields should return success status').toBe(200);
+      expect(Array.isArray(folderFieldsData.data), 'Folder index fields should return an array').toBe(true);
+
+      const relatedField = folderFieldsData.data.find((field) =>
+        field?.id === createdIndexFieldId ||
+        field?.fieldId === createdIndexFieldId ||
+        field?.eaDefId === createdIndexFieldId
+      );
+
+      expect(relatedField, 'Newly related index field should be returned for the folder').toBeDefined();
+    });
+  });
 });
