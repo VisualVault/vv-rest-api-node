@@ -1,7 +1,16 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 // Import setup.js first to ensure dotenv loads before checking env vars
 import { getTestConfig, canRunIntegrationTests, describeIf } from '../setup.js';
 import { Authorize } from '../../../lib/VVRestApi.js';
+
+async function getSystemDocTypeEnabled(client) {
+  const documentFieldsResponse = await client.documents.getDocumentFields({});
+  const documentFieldsResult = JSON.parse(documentFieldsResponse);
+
+  expect(documentFieldsResult.meta.status, 'getDocumentFields should return success status').toBe(200);
+  expect(Array.isArray(documentFieldsResult.data), 'getDocumentFields should return an array').toBe(true);
+  return documentFieldsResult.data.some((field) => field?.databaseField === 'DhDocType');
+}
 
 describeIf(canRunIntegrationTests())('DocumentManager Integration Tests', () => {
   let config;
@@ -31,6 +40,12 @@ describeIf(canRunIntegrationTests())('DocumentManager Integration Tests', () => 
 
     const folderResponse = await client.library.postFolderByPath({}, folderData, testFolderPath);
     const folderResult = JSON.parse(folderResponse);
+    expect(folderResult, 'postFolderByPath should return a response').toBeDefined();
+    expect(folderResult).toHaveProperty('meta');
+    expect(folderResult.meta.status, 'postFolderByPath should return success status').toBe(200);
+    expect(folderResult).toHaveProperty('data');
+    expect(folderResult.data, 'postFolderByPath should return data').toBeDefined();
+    expect(folderResult.data.id, 'postFolderByPath should return folder id').toBeDefined();
     testFolderId = folderResult.data.id;
     console.log('Created test folder:', testFolderId);
 
@@ -77,6 +92,118 @@ describeIf(canRunIntegrationTests())('DocumentManager Integration Tests', () => 
       expect(data.meta.status, 'GetRevision should return success status').toBe(200);
       expect(data).toHaveProperty('data');
       expect(data.data.dhId, 'Document revision ID should match the provided ID').toEqual(testDocRevId);
+    });
+  });
+
+  describe('createDocument', () => {
+    let createdRevisionId;
+
+    afterEach(async () => {
+      if (createdRevisionId) {
+        try {
+          await client.documents.deleteDocument({}, createdRevisionId);
+          console.log('Cleanup - deleted createDocument test document:', createdRevisionId);
+        } catch (error) {
+          console.warn('Cleanup createDocument test document failed:', error.message);
+        }
+        createdRevisionId = null;
+      }
+    });
+
+    it('should create a document via DocApi', async () => {
+      expect(testFolderId, 'testFolderId should be set by beforeAll').toBeDefined();
+
+      const docName = `DocApi Create Test ${Date.now()}`;
+      const docData = {
+        folderId: testFolderId,
+        name: docName,
+        description: 'DocApi create test document - safe to delete',
+        revision: '1',
+        documentState: 'Released',
+        filename: 'docapi-create.txt',
+        fileLength: 0
+      };
+
+      const response = await client.docApi.documents.createDocument(docData);
+      expect(response, 'createDocument should return a response').toBeDefined();
+
+      const data = JSON.parse(response);
+      console.log('createDocument response:', JSON.stringify(data, null, 2));
+
+      expect(data).toHaveProperty('meta');
+      expect(data.meta.status, 'createDocument should return 201 Created').toBe(201);
+      expect(data).toHaveProperty('data');
+      expect(data.data.dhId, 'createDocument should return a revision ID').toBeDefined();
+      expect(data.data.dlId, 'createDocument should return a document ID').toBeDefined();
+      expect(data.data.dlDocId, 'createDocument should return the document name').toBe(docName);
+
+      createdRevisionId = data.data.dhId;
+    });
+  });
+
+  describe('updateDocument', () => {
+    let createdRevisionId;
+    let createdDocumentId;
+
+    afterEach(async () => {
+      if (createdRevisionId) {
+        try {
+          await client.documents.deleteDocument({}, createdRevisionId);
+          console.log('Cleanup - deleted updateDocument test document:', createdRevisionId);
+        } catch (error) {
+          console.warn('Cleanup updateDocument test document failed:', error.message);
+        }
+        createdRevisionId = null;
+        createdDocumentId = null;
+      }
+    });
+
+    it('should update a document via DocApi', async () => {
+      expect(testFolderId, 'testFolderId should be set by beforeAll').toBeDefined();
+
+      const integratedDocTypesEnabled = await getSystemDocTypeEnabled(client);
+
+      const docName = `DocApi Update Test ${Date.now()}`;
+      const createData = {
+        folderId: testFolderId,
+        name: docName,
+        description: 'DocApi update test document - safe to delete',
+        revision: '1',
+        documentState: 'Released',
+        filename: 'docapi-update.txt',
+        fileLength: 0
+      };
+
+      const createResponse = await client.docApi.documents.createDocument(createData);
+      const createResult = JSON.parse(createResponse);
+      expect(createResult.meta.status, 'createDocument should return 201 Created').toBe(201);
+
+      createdRevisionId = createResult.data.dhId;
+      createdDocumentId = createResult.data.dlId;
+
+      expect(createdDocumentId, 'createDocument should return document ID').toBeDefined();
+
+      const updateData = {
+        description: 'DocApi update test document - updated',
+        docType: 'Invoice',
+        confidence: 0.9
+      };
+
+      const updateResponse = await client.docApi.documents.updateDocument(createdDocumentId, updateData);
+      const updateResult = JSON.parse(updateResponse);
+
+      expect(updateResult).toHaveProperty('meta');
+      expect(updateResult.meta.status, 'updateDocument should return success status').toBe(200);
+      expect(updateResult).toHaveProperty('data');
+      expect(updateResult.data.dhDesc, 'updateDocument should update description').toBe(updateData.description);
+
+      if (!integratedDocTypesEnabled) {
+        console.log('Skipping strict docType/confidence assertions because integrated document types is not enabled in this environment.');
+        return;
+      }
+
+      expect(updateResult.data.dhDocType, 'updateDocument should update docType').toBe(updateData.docType);
+      expect(updateResult.data.dhDocTypeConfidence, 'updateDocument should update confidence').toBe(updateData.confidence);
     });
   });
 
