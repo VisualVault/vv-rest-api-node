@@ -80,9 +80,11 @@ export function getTestConfig() {
     testFolderIndexFieldId: process.env.VV_TEST_FOLDER_INDEX_FIELD_ID || null,
     // DocumentsManager tests (index field operations)
     testIndexFolderId: process.env.VV_TEST_INDEX_FOLDER_ID || null,
-    // ModelsManager tests (intelligent object model operations)
+    // DocumentsManager tests (zip status operations)
+    testDocumentDhId: process.env.VV_TEST_DOCUMENT_DH_ID || null,
+    // ModelManager tests (intelligent object model operations)
     testModelId: process.env.VV_TEST_MODEL_ID || null,
-    //ObjectsManager tests (intelligent object operations)
+    //ObjectManager tests (intelligent object operations)
     testObjectModelId: process.env.VV_TEST_OBJECT_MODEL_ID || null,
     testObjectInstanceId: process.env.VV_TEST_OBJECT_INSTANCE_ID || null,
     // UserNotificationsManager tests (user notification operations)
@@ -105,4 +107,3 @@ export function canRunIntegrationTests() {
  * Use: describeIf(canRunIntegrationTests())('test suite', () => {...})
  */
 export const describeIf = (condition) => condition ? describe : describe.skip;
-export const itIf = (condition) => condition ? it : it.skip;

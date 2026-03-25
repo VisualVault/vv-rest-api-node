@@ -1,4 +1,4 @@
-# vv-rest-api-node
+# visualvault-api
 
 ![Stability: Beta](https://img.shields.io/badge/stability-beta-yellow.svg)
 
@@ -7,7 +7,7 @@ A Node.js client library that provides convenient access to the VisualVault REST
 ## Installation
 
 ```bash
-npm install @visualvault/vv-rest-api-node
+npm install visualvault-api
 ```
 
 ## Requirements
@@ -20,10 +20,10 @@ npm install @visualvault/vv-rest-api-node
 
 ```javascript
 // ES Modules (recommended)
-import vvRestApi from '@visualvault/vv-rest-api-node';
+import vvRestApi from 'visualvault-api';
 
 // CommonJS
-const vvRestApi = require('@visualvault/vv-rest-api-node');
+const vvRestApi = require('visualvault-api');
 
 // Initialize authentication
 const auth = new vvRestApi.authorize();
@@ -141,7 +141,7 @@ For more information about the VisualVault API, visit the [VisualVault documenta
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [ISC License](LICENSE).
 
 ## Contributing
 

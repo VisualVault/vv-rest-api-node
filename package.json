@@ -1,6 +1,6 @@
 {
-  "name": "@visualvault/vv-rest-api-node",
-  "version": "2.0.0-beta.0",
+  "name": "visualvault-api",
+  "version": "2.0.0-beta.2",
   "description": "A Node.js client library for the VisualVault APIs",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -55,7 +55,7 @@
     "url": "git+https://github.com/VisualVault/vv-rest-api-node.git"
   },
   "author": "VisualVault",
-  "license": "MIT",
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/VisualVault/vv-rest-api-node/issues"
   },

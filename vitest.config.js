@@ -5,10 +5,15 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const verbose = process.env.VV_TEST_VERBOSE === 'true';
+
 export default defineConfig({
   test: {
     // Enable globals to avoid importing describe, it, expect
     globals: true,
+
+    // Suppress console.log unless VV_TEST_VERBOSE=true
+    silent: !verbose,
 
     // Test environment
     environment: 'node',
@@ -25,7 +30,13 @@ export default defineConfig({
         'lib/**/*.test.js',
         'lib/**/*.backup',
         'node_modules/**'
-      ]
+      ],
+      thresholds: {
+        functions: 70,
+        lines: 70,
+        branches: 70,
+        statements: 70
+      }
     },
 
     // Test match patterns - integration tests only
