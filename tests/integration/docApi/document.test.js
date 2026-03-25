@@ -3,6 +3,15 @@ import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import { getTestConfig, canRunIntegrationTests, describeIf } from '../setup.js';
 import { Authorize } from '../../../lib/VVRestApi.js';
 
+async function getSystemDocTypeEnabled(client) {
+  const documentFieldsResponse = await client.documents.getDocumentFields({});
+  const documentFieldsResult = JSON.parse(documentFieldsResponse);
+
+  expect(documentFieldsResult.meta.status, 'getDocumentFields should return success status').toBe(200);
+  expect(Array.isArray(documentFieldsResult.data), 'getDocumentFields should return an array').toBe(true);
+  return documentFieldsResult.data.some((field) => field?.databaseField === 'DhDocType');
+}
+
 describeIf(canRunIntegrationTests())('DocumentManager Integration Tests', () => {
   let config;
   let client;
@@ -152,6 +161,8 @@ describeIf(canRunIntegrationTests())('DocumentManager Integration Tests', () => 
     it('should update a document via DocApi', async () => {
       expect(testFolderId, 'testFolderId should be set by beforeAll').toBeDefined();
 
+      const integratedDocTypesEnabled = await getSystemDocTypeEnabled(client);
+
       const docName = `DocApi Update Test ${Date.now()}`;
       const createData = {
         folderId: testFolderId,
@@ -181,12 +192,16 @@ describeIf(canRunIntegrationTests())('DocumentManager Integration Tests', () => 
       const updateResponse = await client.docApi.documents.updateDocument(createdDocumentId, updateData);
       const updateResult = JSON.parse(updateResponse);
 
-      console.log('updateDocument response:', JSON.stringify(updateResult, null, 2));
-
       expect(updateResult).toHaveProperty('meta');
       expect(updateResult.meta.status, 'updateDocument should return success status').toBe(200);
       expect(updateResult).toHaveProperty('data');
       expect(updateResult.data.dhDesc, 'updateDocument should update description').toBe(updateData.description);
+
+      if (!integratedDocTypesEnabled) {
+        console.log('Skipping strict docType/confidence assertions because integrated document types is not enabled in this environment.');
+        return;
+      }
+
       expect(updateResult.data.dhDocType, 'updateDocument should update docType').toBe(updateData.docType);
       expect(updateResult.data.dhDocTypeConfidence, 'updateDocument should update confidence').toBe(updateData.confidence);
     });
