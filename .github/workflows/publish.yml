@@ -157,7 +157,7 @@ jobs:
           path: dist/
 
       - name: Publish to npm
-        run: npm publish --tag ${{ needs.check.outputs.tag }} --provenance --access public
+        run: npm publish --tag ${{ needs.check.outputs.tag }} --access public
 
       - name: Log published version
         run: echo "Successfully published visualvault-api@${{ needs.check.outputs.version }} with dist-tag '${{ needs.check.outputs.tag }}'"
