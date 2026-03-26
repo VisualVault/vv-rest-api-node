@@ -57,8 +57,9 @@ export default defineConfig({
       shuffle: false
     },
 
-    // Show full error diffs
-    reporters: ['verbose']
+    // Show full error diffs and skipped tests
+    reporters: ['verbose'],
+    printSkippedTests: true
   },
 
   // Resolve configuration for ESM
