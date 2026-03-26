@@ -56,6 +56,13 @@ jobs:
             exit 0
           fi
 
+          # Only auto-publish beta versions; stable releases require workflow_dispatch
+          if [[ "$TAG" == "latest" ]]; then
+            echo "Stable release detected. Use workflow_dispatch to publish."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           echo "Version changed: $PREV_VERSION -> $VERSION ($TAG)"
           echo "should_publish=true" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
