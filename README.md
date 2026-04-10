@@ -1,7 +1,5 @@
 # visualvault-api
 
-![Stability: Beta](https://img.shields.io/badge/stability-beta-yellow.svg)
-
 A Node.js client library that provides convenient access to the VisualVault REST API for server-side applications.
 
 ## Installation
