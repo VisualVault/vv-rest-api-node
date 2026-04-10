@@ -24,7 +24,7 @@ import vvRestApi from 'visualvault-api';
 const vvRestApi = require('visualvault-api');
 
 // Initialize authentication
-const auth = new vvRestApi.authorize();
+const auth = new vvRestApi.Authorize();
 
 // Get authenticated client
 auth.getVaultApi(
@@ -49,7 +49,7 @@ auth.getVaultApi(
 If you already have a JWT token:
 
 ```javascript
-const auth = new vvRestApi.authorize();
+const auth = new vvRestApi.Authorize();
 
 auth.getVaultApiFromJwt(
     'your-jwt-token',
