@@ -1,6 +1,6 @@
 {
   "name": "visualvault-api",
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0",
   "description": "A Node.js client library for the VisualVault APIs",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -8,14 +8,17 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./constants": {
+      "types": "./dist/constants.d.ts",
       "import": "./dist/constants.js",
       "require": "./dist/constants.cjs"
     },
     "./VVRestApi": {
+      "types": "./dist/VVRestApi.d.ts",
       "import": "./dist/VVRestApi.js",
       "require": "./dist/VVRestApi.cjs"
     }
