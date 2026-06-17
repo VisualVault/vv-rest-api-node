@@ -30,6 +30,23 @@ jobs:
           test -f dist/config.yml || (echo "Build failed: dist/config.yml not found" && exit 1)
           echo "Build output verified successfully."
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
   test:
     runs-on: ubuntu-latest
     steps:
