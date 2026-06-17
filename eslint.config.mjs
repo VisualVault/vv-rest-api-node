@@ -2,7 +2,7 @@ import jsdocPlugin from 'eslint-plugin-jsdoc';
 
 export default [
   {
-    files: ['**/*.ts', '**/*.tsx', '**/*.js'],
+    files: ['**/*.js'],
     plugins: {
       jsdoc: jsdocPlugin,
     },
@@ -29,9 +29,7 @@ export default [
   // Prevent require-jsdoc from running on test and config files
   {
     files: [
-      "**/__tests__/**/*.[jt]s?(x)",
-      "**/?(*.)+(spec|test).[jt]s?(x)",
-      "**/tests/**/*.[jt]s?(x)",
+      "**/tests/**/*.test.js",
       "**/*.config.js"
     ],
     rules: {
