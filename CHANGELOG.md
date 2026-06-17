@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased] - 2026-06-17 <!-- TODO: Add version number when next release is added -->
+
+### Added
+- ESLint with `eslint-plugin-jsdoc` configured to warn on missing JSDoc across all files
+- `lint` npm script
+- Lint job in CI pipeline
+- Typed all `VVClient` manager properties in `VVRestApi.js` (replaced `{*}` annotations with real manager class types, enabling typed IntelliSense on the top-level client)
+
 ## [2.0.0] - 2026-04-10
 
 ### Added
