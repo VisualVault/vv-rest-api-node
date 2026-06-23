@@ -16,7 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - JSDoc added to all public methods with accurate parameter types, descriptions, and return types:
   - `DocumentManager`
   - `ObjectManager`
+  - `ModelManager`
   - `FormInstanceManager`
+  - `UserNotificationManager`
+  - `RolesAndPermissionsManager`
+  - `WorkflowManager`
+
 
 ## [2.0.0] - 2026-04-10
 
