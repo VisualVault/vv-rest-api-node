@@ -24,6 +24,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `LibraryManager`
     - `SitesManager`
     - `UsersManager`
+    - `CustomerDatabaseManager`
+    - `CustomerManager`
+    - `EmailManager`
+    - `FilesManager`
+    - `ConfigurationManager`
+    - `CurrentUserManager`
+    - `CustomQueryManager`
+    - `DropdownListsManager`
+    - `GroupsManager`
+    - `IndexFieldsManager`
+    - `LanguageResourcesManager`
+    - `LayoutsManager`
+    - `OutsideProcessesManager`
+    - `ProjectsManager`
+    - `ReportsManager`
+    - `ScheduledProcessManager`
+    - `ScriptsManager`
+    - `SecurityMembersManager`
+
 ## [2.0.0] - 2026-04-10
 
 ### Added
