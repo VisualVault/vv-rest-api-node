@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `UserNotificationManager`
     - `RolesAndPermissionsManager`
     - `WorkflowManager`
+    - `LibraryManager`
+    - `SitesManager`
+    - `UsersManager`
     - `CustomerDatabaseManager`
     - `CustomerManager`
     - `EmailManager`
