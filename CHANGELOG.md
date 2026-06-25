@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2026-06-23 <!-- TODO: Add version number when next release is added -->
 
 ### Added
-- ESLint with `eslint-plugin-jsdoc` configured to warn on missing JSDoc across all files
+- ESLint with `eslint-plugin-jsdoc` configured to error on missing JSDoc for all public API files
 - `lint` npm script
 - Lint job in CI pipeline
 - Typed all `VVClient` manager properties in `VVRestApi.js` (replaced `{*}` annotations with real manager class types, enabling typed IntelliSense on the top-level client)
