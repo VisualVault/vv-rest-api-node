@@ -9,7 +9,7 @@ export default [
     rules: {
       // Require JSDoc for functions and classes
       'jsdoc/require-jsdoc': [
-        'warn',
+        'error',
         {
           require: {
             FunctionDeclaration: true,
@@ -21,16 +21,19 @@ export default [
         },
       ],
       // Catch missing parameters/return tags and bad types
-      'jsdoc/require-param': 'warn',
-      'jsdoc/require-returns': 'warn',
-      'jsdoc/check-types': 'warn',
+      'jsdoc/require-param': 'error',
+      'jsdoc/require-returns': 'error',
+      'jsdoc/check-types': 'error',
     },
   },
-  // Prevent require-jsdoc from running on test and config files
+  // Prevent require-jsdoc from running on test, config, and internal infrastructure files
   {
     files: [
       "**/tests/**/*.test.js",
-      "**/*.config.js"
+      "**/*.config.js",
+      "lib/http/**/*.js",
+      "lib/vvRestApi/constants.js",
+      "lib/VVRestApi.js"
     ],
     rules: {
       "jsdoc/require-jsdoc": "off"
