@@ -30,6 +30,9 @@ jobs:
           test -f dist/config.yml || (echo "Build failed: dist/config.yml not found" && exit 1)
           echo "Build output verified successfully."
 
+      - name: Check published types
+        run: npm run check:types
+
   lint:
     runs-on: ubuntu-latest
     steps:
