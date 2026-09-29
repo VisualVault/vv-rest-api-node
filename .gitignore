@@ -37,3 +37,6 @@ Thumbs.db
 # Coverage
 coverage/
 .nyc_output/
+
+# Scratch files
+.scratch/

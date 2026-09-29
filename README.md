@@ -133,6 +133,31 @@ client.documents.getDocuments(params, folderId)
     });
 ```
 
+## TypeScript / IntelliSense
+
+Type declarations ship with the package. You do not need to install anything else. The types work with ESM `import`, CommonJS `require`, and TypeScript.
+
+In plain JavaScript, your own function parameters have no types. Add a JSDoc annotation to helper functions that take the client:
+
+```javascript
+/** @param {import('visualvault-api').VVClient} vvClient */
+async function getForms(vvClient) {
+    const params = {};
+    return vvClient.forms.getForms(params, 'Your Form Template Name');
+}
+```
+
+Or use a type alias:
+
+```javascript
+/** @typedef {import('visualvault-api').VVClient} VVClient */
+
+/** @param {VVClient} vvClient */
+async function getForms(vvClient) {
+    const params = {};
+    return vvClient.forms.getForms(params, 'Your Form Template Name');
+}
+
 ## Support
 
 For more information about the VisualVault API, visit the [VisualVault documentation](https://docs.visualvault.com/).

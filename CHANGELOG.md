@@ -44,6 +44,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `SecurityMembersManager`
     - `DocumentsManager`
     - `FormsManager`
+- `check:types` npm script: runs `@arethetypeswrong/cli` on the packed package, then compiles a strict TypeScript consumer (`skipLibCheck: false`) against the published declarations. Runs in CI and in `prepublishOnly`.
+- "TypeScript / IntelliSense" section in README
+
+### Fixed
+- The published types resolve without installing `@types/node` yourself. `@types/node` (`>=20`) is now a runtime dependency.
+- CommonJS `require()` consumers now get CommonJS type declarations (`.d.cts`). Before, they got the ESM declarations, and TypeScript mistook the CommonJS entry for ESM.
+- `visualvault-api/constants` and `visualvault-api/VVRestApi` types now resolve under `moduleResolution: node10`.
+- `WorkflowManager.getWorkflowVariables` types no longer fail to compile (error TS1016) when `skipLibCheck` is `false`. `params` is now a required parameter typed `object | null`. Pass `null` when there are no parameters.
 
 ## [2.0.0] - 2026-04-10
 

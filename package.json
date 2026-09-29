@@ -8,19 +8,45 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./constants": {
-      "types": "./dist/constants.d.ts",
-      "import": "./dist/constants.js",
-      "require": "./dist/constants.cjs"
+      "import": {
+        "types": "./dist/constants.d.ts",
+        "default": "./dist/constants.js"
+      },
+      "require": {
+        "types": "./dist/constants.d.cts",
+        "default": "./dist/constants.cjs"
+      }
     },
     "./VVRestApi": {
-      "types": "./dist/VVRestApi.d.ts",
-      "import": "./dist/VVRestApi.js",
-      "require": "./dist/VVRestApi.cjs"
+      "import": {
+        "types": "./dist/VVRestApi.d.ts",
+        "default": "./dist/VVRestApi.js"
+      },
+      "require": {
+        "types": "./dist/VVRestApi.d.cts",
+        "default": "./dist/VVRestApi.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "constants": [
+        "./dist/constants.d.ts"
+      ],
+      "VVRestApi": [
+        "./dist/VVRestApi.d.ts"
+      ]
     }
   },
   "keywords": [
@@ -48,9 +74,11 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm run check:types",
+    "check:types": "attw --pack . && tsc -p tsconfig.consumer.json"
   },
   "dependencies": {
+    "@types/node": ">=20",
     "debug": "^4.3.7",
     "js-yaml": "^4.1.0"
   },
@@ -68,8 +96,8 @@
     "access": "public"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@types/debug": "^4.1.13",
-    "@types/node": "^25.9.3",
     "@vitest/coverage-v8": "^4.1.0",
     "@vitest/ui": "^4.1.0",
     "dotenv": "^17.2.3",
