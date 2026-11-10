@@ -1,6 +1,6 @@
 {
   "name": "visualvault-api",
-  "version": "2.1.0",
+  "version": "2.2.0-beta.1",
   "description": "A Node.js client library for the VisualVault APIs",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -71,6 +71,7 @@
     "build": "tsup",
     "lint": "eslint lib/",
     "test": "vitest run",
+    "test:unit": "vitest run --config vitest.unit.config.js",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",

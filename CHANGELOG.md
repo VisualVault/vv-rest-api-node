@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+## [2.2.0-beta.1] - 2026-11-10
+
+### Added
+- `VVClient.setCompletionTarget(target)` sets where `scheduledProcess.postCompletion` sends the Completion of a scheduled Run. With `CompletionTarget.StudioApi` (`'studioapi'`), the Completion goes to the StudioApi route `StudioApi.ScheduledRunCompletion` (`POST /api/v1/Microservices/runs/{runToken}/completion`) with a fresh JWT for the script user, and never to VVCore. If the client has no enabled StudioApi, or the JWT from VVCore expires within 30 seconds, `postCompletion` rejects. Unknown values are logged and keep the VVCore route. With no target, `postCompletion` is unchanged.
+- `CompletionTarget` constant (`CompletionTarget.StudioApi`), exported from the package root and `visualvault-api/constants`
+- `test:unit` npm script and `vitest.unit.config.js` for unit tests that need no live credentials
+- Connection retry for every VV HTTP call (CRUD calls, stream upload and download, token acquisition and refresh). When no HTTP response comes back (`ECONNREFUSED`, `ECONNRESET`, `ETIMEDOUT`, `ESOCKETTIMEDOUT`, `ENOTFOUND`, `EHOSTUNREACH`, `EAI_AGAIN`), the call is retried up to 3 times with a delay of 250 ms times the attempt number. Each retry is logged on the `visualvault:http` debug namespace. HTTP error responses are not retried by this mechanism, and the 429 retry is unchanged. All methods are retried, POST and PUT included, so a connection reset after the request was sent can repeat a write.
+
 ## [2.1.0] - 2026-10-14
 
 ### Added
