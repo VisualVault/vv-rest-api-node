@@ -40,3 +40,5 @@ coverage/
 
 # Scratch files
 .scratch/
+# Claude Code worktrees
+.claude/worktrees/
