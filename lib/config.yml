@@ -134,5 +134,6 @@ ResourceUri:
     WorkflowTerminate: /workflows/{workflowId}/instances/{instanceId}/complete
     WorkflowHistoryObject: /workflowhistories/{workflowId}/objects/{objectId}
     WorkflowHistoryRunningObject: /workflowhistories/{workflowId}/objects/{objectId}/running
+    ScheduledRunCompletion: /api/v1/Microservices/runs/{runToken}/completion
   NotificationsApi:
     ForceUIRefresh: /Users/{id}/ForceUIRefresh

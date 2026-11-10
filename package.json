@@ -71,6 +71,7 @@
     "build": "tsup",
     "lint": "eslint lib/",
     "test": "vitest run",
+    "test:unit": "vitest run --config vitest.unit.config.js",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",

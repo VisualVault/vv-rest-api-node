@@ -81,4 +81,48 @@ describeIf(canRunIntegrationTests())('Authentication Integration Tests', () => {
       expect(client.scripts, 'scripts manager should be initialized').toBeDefined();
     });
   });
+
+  describe('JWT Authentication', () => {
+    let jwt;
+    let jwtExpires;
+    let passwordUserId;
+
+    beforeAll(async () => {
+      const jwtResponse = JSON.parse(await client.users.getUserJwt());
+      jwt = jwtResponse.data.token;
+      jwtExpires = new Date(jwtResponse.data.expires);
+
+      const userResponse = JSON.parse(await client.currentUser.getCurrentUser({}));
+      passwordUserId = userResponse.data.id;
+    }, 60000);
+
+    it('should return a working client from a JWT with a valid expiration date', async () => {
+      const auth = new Authorize();
+      const jwtClient = await auth.getVaultApiFromJwt(
+        jwt,
+        config.baseUrl,
+        config.customerAlias,
+        config.databaseAlias,
+        jwtExpires
+      );
+
+      const response = JSON.parse(await jwtClient.currentUser.getCurrentUser({}));
+      expect(response.meta.status, 'getCurrentUser with the JWT client should return success status').toBe(200);
+      expect(response.data.id, 'JWT client should act as the same user as the password login').toBe(passwordUserId);
+    });
+
+    it('should exchange a JWT with no expiration date and return a working client', async () => {
+      const auth = new Authorize();
+      const jwtClient = await auth.getVaultApiFromJwt(
+        jwt,
+        config.baseUrl,
+        config.customerAlias,
+        config.databaseAlias
+      );
+
+      const response = JSON.parse(await jwtClient.currentUser.getCurrentUser({}));
+      expect(response.meta.status, 'getCurrentUser with the exchanged JWT client should return success status').toBe(200);
+      expect(response.data.id, 'Exchanged JWT client should act as the same user as the password login').toBe(passwordUserId);
+    });
+  });
 });
