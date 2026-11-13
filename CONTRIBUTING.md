@@ -31,11 +31,23 @@ npm run build
 
 ## Testing
 
-This project uses [Vitest](https://vitest.dev/) for testing.
+This project uses [Vitest](https://vitest.dev/) for testing, in two suites.
+
+**Unit tests** (`tests/unit/`) stub `globalThis.fetch` and need no credentials
+and no network, so they run anywhere, including CI.
+
+**Integration tests** (`tests/integration/`) call a real VisualVault instance.
+They need the credentials in `.env.example`, copied to `.env` and filled in. On
+a machine with no `.env` or no route to the instance, they fail during setup
+rather than skipping.
+
 Please update the tests to reflect your code changes.
 
 ```bash
-# Run all tests
+# Run the unit tests
+npm run test:unit
+
+# Run the integration tests (needs .env and a reachable instance)
 npm test
 
 # Run tests in watch mode (during development)
@@ -47,10 +59,11 @@ npm run test:coverage
 
 Before submitting changes:
 
-1. Ensure all tests pass: `npm test`
-2. Maintain or improve test coverage: `npm run test:coverage`
-3. Ensure backward compatibility when possible
-4. Update documentation if adding new features
+1. Ensure the unit tests pass: `npm run test:unit`
+2. Ensure the integration tests pass against an instance you can reach: `npm test`
+3. Maintain or improve test coverage: `npm run test:coverage`
+4. Ensure backward compatibility when possible
+5. Update documentation if adding new features
 
 ## Pull Request Process
 
@@ -66,7 +79,7 @@ Before submitting changes:
 - Provide a clear description of the changes
 - Reference any related issues
 - Update CHANGELOG.md with your changes
-- Ensure all tests pass
+- Ensure both test suites pass
 - Update documentation as needed
 
 ## Versioning

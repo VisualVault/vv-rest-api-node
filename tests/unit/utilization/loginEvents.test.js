@@ -74,6 +74,8 @@ function createFakeVvServer({
 } = {}) {
     const requests = [];
     let jwtsIssued = 0;
+    /** Every JWT this server has issued, against the instant it stops being valid. */
+    const jwtExpiries = new Map();
     const server = {
         requests,
         loginsEnvelope: loginsEnvelope ?? {
@@ -106,9 +108,15 @@ function createFakeVvServer({
             if (!jwtAvailable) {
                 return json(200, { meta: { status: 403, errors: [{ message: 'No JWT for this user' }] }, data: null });
             }
+            // A fake that served an expired token would pass a session that never refreshes.
+            const bearer = (request.authorization || '').replace('Bearer ', '');
+            if (jwtExpiries.has(bearer) && jwtExpiries.get(bearer) <= Date.now()) {
+                return json(401, { meta: { status: 401, statusMsg: 'Token expired' } });
+            }
             jwtsIssued += 1;
-            const expires = new Date(Date.now() + jwtLifetimeMs).toISOString();
-            return json(200, { meta: { status: 200 }, data: { token: `jwt-${jwtsIssued}`, expires } });
+            const expiresAt = Date.now() + jwtLifetimeMs;
+            jwtExpiries.set(`jwt-${jwtsIssued}`, expiresAt);
+            return json(200, { meta: { status: 200 }, data: { token: `jwt-${jwtsIssued}`, expires: new Date(expiresAt).toISOString() } });
         }
         if (url.origin === VAULT_URL && url.pathname === `${API_PATH}/sites` && method === 'GET') {
             return json(200, SITES_ENVELOPE);
@@ -545,10 +553,7 @@ describe('utilization.loginEvents.iterateLoginEvents', () => {
         expect(await walk.next()).toEqual({ value: undefined, done: true });
         expect(sentQueries()).toHaveLength(2);
     });
-    // Skipped: this test is the reproduction for an open defect, which is not specific to Utilization. A session
-    // whose baseUrl is repointed to a service host no longer carries the VVCore URL, and only VVCore issues these
-    // JWTs, so the session cannot refresh. docApi, formsApi, objectsApi, studioApi and notificationsApi share it.
-    it.skip('carries on across a token that expires part way through the walk', async () => {
+    it('carries on across a token that expires part way through the walk', async () => {
         const startedAt = new Date('2026-03-05T12:00:00Z');
         vi.useFakeTimers({ toFake: ['Date'] });
         vi.setSystemTime(startedAt);

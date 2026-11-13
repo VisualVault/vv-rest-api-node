@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Utilization service host is discovered after authorization from `GET /configuration/utilizationapi`. `client.utilization` is `null` when the instance reports no enabled Utilization service, or when that route does not exist, and authorization succeeds either way.
 
 ### Fixed
+- A session belonging to a specialized API (`client.docApi`, `client.formsApi`, `client.objectsApi`, `client.studioApi`, `client.notificationsApi`, `client.utilization`) now refreshes its own token. Each of these runs on its own host, and its session no longer carried the VVCore address that issues tokens, so a call made once the token neared expiry failed with `Unable to obtain Authorization, error: Error: Unknown response for JWT: HTTP 404` and the caller had to authorize again. `SessionToken` now carries the issuer address, the refresh is aimed at it, and the re-acquired token is applied to the session instead of being discarded. This is what let `utilization.iterateLoginEvents` walk past a token boundary; the failure needed a client held past its token lifetime, so a short-lived client never saw it.
 - `getVaultApiFromJwt` now creates NotificationsApi, so `client.notificationsApi` carries the module on a client authorized with a JWT the caller already holds. Both of its authorization paths created every other specialized API and left this one `null`, where a client from `getVaultApi` had it.
 
 ## [2.2.0-beta.1] - 2026-11-10
