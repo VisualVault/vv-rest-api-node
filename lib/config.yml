@@ -137,3 +137,5 @@ ResourceUri:
     ScheduledRunCompletion: /api/v1/Microservices/runs/{runToken}/completion
   NotificationsApi:
     ForceUIRefresh: /Users/{id}/ForceUIRefresh
+  UtilizationApi:
+    LoginEvents: /api/v1/logins
