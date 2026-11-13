@@ -4,6 +4,7 @@ import { StaleCursorError } from '../../../lib/index.js';
 
 const VAULT_URL = 'https://vault.test';
 const UTILIZATION_URL = 'https://utilization.test';
+const STUDIO_URL = 'https://studio.test';
 const API_PATH = '/api/v1/cust/db';
 const AUDIENCE = 'test-audience';
 const LOGINS_PATH = '/api/v1/logins';
@@ -30,6 +31,15 @@ const LOGIN_EVENT = {
 };
 
 /**
+ * The envelope the fake VVCore sites route answers with.
+ * @type {object}
+ */
+const SITES_ENVELOPE = {
+    meta: { status: 200, message: 'OK', errors: [] },
+    data: [{ id: '3f8a1c20-0000-4000-8000-00000000000a', name: 'Default Site' }],
+};
+
+/**
  * Builds a fake VisualVault server for global `fetch`, recording every request and routing by URL and method.
  * @param {object} [options]
  * @param {object} [options.loginsEnvelope] - The envelope the Utilization logins route answers with.
@@ -38,10 +48,30 @@ const LOGIN_EVENT = {
  * @param {boolean} [options.jwtAvailable] - Whether VVCore issues a JWT, leaving the client on its OAuth token
  *   when it does not.
  * @param {number} [options.jwtLifetimeMs] - How long each issued JWT stays valid. Defaults to one hour.
+ * @param {boolean} [options.utilizationEnabled] - The `isEnabled` flag the Utilization discovery route reports.
+ *   Defaults to enabled.
+ * @param {string} [options.utilizationApiUrl] - The host the Utilization discovery route reports. Defaults to the
+ *   fake Utilization host.
+ * @param {boolean} [options.utilizationRouteMissing] - Whether the Utilization discovery route answers 404, as a
+ *   VVCore predating the endpoint does. Defaults to the route being present.
+ * @param {boolean} [options.studioApiDiscoverable] - Whether StudioApi discovery reports a service. Defaults to
+ *   reporting none.
+ * @param {number} [options.studioApiDelayMs] - How long StudioApi discovery waits before answering. Defaults to
+ *   answering at once.
  * @returns {{ fetch: Function, requests: Array<object>, loginsEnvelope: object }} The fake server. Assigning
  *   `loginsEnvelope` on it changes what the logins route answers from then on.
  */
-function createFakeVvServer({ loginsEnvelope, loginsHandler, jwtAvailable = true, jwtLifetimeMs = 60 * 60 * 1000 } = {}) {
+function createFakeVvServer({
+    loginsEnvelope,
+    loginsHandler,
+    jwtAvailable = true,
+    jwtLifetimeMs = 60 * 60 * 1000,
+    utilizationEnabled = true,
+    utilizationApiUrl = UTILIZATION_URL,
+    utilizationRouteMissing = false,
+    studioApiDiscoverable = false,
+    studioApiDelayMs = 0,
+} = {}) {
     const requests = [];
     let jwtsIssued = 0;
     const server = {
@@ -80,6 +110,26 @@ function createFakeVvServer({ loginsEnvelope, loginsHandler, jwtAvailable = true
             const expires = new Date(Date.now() + jwtLifetimeMs).toISOString();
             return json(200, { meta: { status: 200 }, data: { token: `jwt-${jwtsIssued}`, expires } });
         }
+        if (url.origin === VAULT_URL && url.pathname === `${API_PATH}/sites` && method === 'GET') {
+            return json(200, SITES_ENVELOPE);
+        }
+        if (url.origin === VAULT_URL && url.pathname === `${API_PATH}/configuration/utilizationapi`) {
+            if (utilizationRouteMissing) {
+                return json(404, { meta: { status: 404, statusMsg: 'Not Found' } });
+            }
+            // The real endpoint answers with a populated `data` even where no Utilization service is configured.
+            return json(200, {
+                meta: { status: 200 },
+                data: { isEnabled: utilizationEnabled, utilizationApiUrl },
+            });
+        }
+        if (url.origin === VAULT_URL && url.pathname === `${API_PATH}/configuration/studioapi`) {
+            if (studioApiDelayMs) {
+                await new Promise((resolve) => setTimeout(resolve, studioApiDelayMs));
+            }
+            const data = studioApiDiscoverable ? { isEnabled: true, studioApiUrl: STUDIO_URL } : null;
+            return json(200, { meta: { status: 200 }, data });
+        }
         if (url.origin === VAULT_URL && url.pathname.startsWith(`${API_PATH}/configuration/`)) {
             return json(200, { meta: { status: 200 }, data: null });
         }
@@ -94,14 +144,12 @@ function createFakeVvServer({ loginsEnvelope, loginsHandler, jwtAvailable = true
 }
 
 /**
- * Authenticates a client against the fake server and wires Utilization to the fake host.
+ * Authenticates a client against the fake server.
  * @returns {Promise<import('../../../lib/VVRestApi.js').VVClient>}
  */
-async function authenticate() {
-    const client = await new Authorize()
+function authenticate() {
+    return new Authorize()
         .getVaultApi('client-id', 'client-secret', 'script.user', 'password', AUDIENCE, VAULT_URL, 'cust', 'db');
-    await client.__createUtilizationApi(UTILIZATION_URL);
-    return client;
 }
 
 describe('utilization.loginEvents.getLoginEvents', () => {
@@ -124,6 +172,17 @@ describe('utilization.loginEvents.getLoginEvents', () => {
     function sentQuery() {
         return server.requests.find((request) => request.host === UTILIZATION_URL).query;
     }
+
+    it('queries the host discovery reported, with the consumer supplying none', async () => {
+        const client = await authenticate();
+
+        const page = await client.utilization.loginEvents.getLoginEvents({
+            startDate: '2026-03-01',
+            endDate: '2026-03-31',
+        });
+
+        expect(JSON.parse(page).data.rows).toEqual([LOGIN_EVENT]);
+    });
 
     it('returns the response for the range unparsed, exactly as the service sent it', async () => {
         const client = await authenticate();
@@ -270,13 +329,6 @@ describe('utilization.loginEvents.getLoginEvents', () => {
         expect(sentQuery()).toEqual({ EndDate: '2026-03-31' });
     });
 
-    it('leaves the module absent rather than half-built when VVCore issues no JWT', async () => {
-        server = createFakeVvServer({ jwtAvailable: false });
-        vi.stubGlobal('fetch', server.fetch);
-        const client = await authenticate();
-
-        expect(client.utilization).toBeNull();
-    });
 });
 
 /**
@@ -538,5 +590,99 @@ describe('utilization.loginEvents.iterateLoginEvents', () => {
         }));
 
         expect(yielded).toEqual([JSON.stringify(STALE_CURSOR_ENVELOPE)]);
+    });
+});
+
+describe('utilization discovery', () => {
+    let server;
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    /**
+     * Stubs `fetch` with a fake server reporting the given Utilization configuration, then authenticates.
+     * @param {object} utilizationConfig - The `utilizationEnabled` and `utilizationApiUrl` the instance reports.
+     * @returns {Promise<import('../../../lib/VVRestApi.js').VVClient>} The authenticated client.
+     */
+    async function clientDiscovering(utilizationConfig) {
+        server = createFakeVvServer(utilizationConfig);
+        vi.stubGlobal('fetch', server.fetch);
+        return authenticate();
+    }
+
+    it('discovers the service at the Utilization configuration route', async () => {
+        await clientDiscovering({});
+
+        expect(server.requests.map(({ method, host, path }) => ({ method, host, path })))
+            .toContainEqual({ method: 'GET', host: VAULT_URL, path: `${API_PATH}/configuration/utilizationapi` });
+    });
+
+    it('leaves the module absent on an instance where the service is turned off', async () => {
+        const client = await clientDiscovering({ utilizationEnabled: false });
+
+        expect(client.utilization).toBeNull();
+    });
+
+    it.each([
+        { label: 'an empty string', host: '' },
+        { label: 'null', host: null },
+    ])('leaves the module absent when the service is on but its host is $label', async ({ host }) => {
+        const client = await clientDiscovering({ utilizationApiUrl: host });
+
+        expect(client.utilization).toBeNull();
+    });
+
+    it('leaves an unrelated manager working on an instance without the service', async () => {
+        const client = await clientDiscovering({ utilizationEnabled: false });
+
+        expect(await client.sites.getSites()).toBe(JSON.stringify(SITES_ENVELOPE));
+    });
+
+    it('discovers the service for a consumer authorizing with a JWT it already holds', async () => {
+        server = createFakeVvServer();
+        vi.stubGlobal('fetch', server.fetch);
+
+        const client = await new Authorize().getVaultApiFromJwt(
+            'caller-held-jwt', VAULT_URL, 'cust', 'db', new Date(Date.now() + 60 * 60 * 1000));
+
+        expect(client.utilization).not.toBeNull();
+        expect(JSON.parse(await client.utilization.loginEvents.getLoginEvents({
+            startDate: '2026-03-01',
+            endDate: '2026-03-31',
+        })).data.rows).toEqual([LOGIN_EVENT]);
+    });
+
+    it('leaves the module absent rather than half-built when VVCore issues no JWT for the service', async () => {
+        server = createFakeVvServer({ jwtAvailable: false });
+        vi.stubGlobal('fetch', server.fetch);
+
+        const client = await new Authorize().getVaultApiFromJwt(
+            'caller-held-jwt', VAULT_URL, 'cust', 'db', new Date(Date.now() + 60 * 60 * 1000));
+
+        expect(client.utilization).toBeNull();
+    });
+
+    it('hands back every other module already discovered when VVCore has no Utilization endpoint', async () => {
+        // The delay holds StudioApi discovery in flight so the Utilization 404 lands with a sibling unfinished.
+        const client = await clientDiscovering({
+            utilizationRouteMissing: true,
+            studioApiDiscoverable: true,
+            studioApiDelayMs: 50,
+        });
+
+        expect(client.studioApi).not.toBeNull();
+        expect(client.utilization).toBeNull();
+    });
+
+    it('leaves VVCore managers pointed at the vault host once Utilization is discovered', async () => {
+        const client = await clientDiscovering({});
+        server.requests.length = 0;
+
+        await client.sites.getSites();
+
+        expect(server.requests.map(({ host, path }) => ({ host, path }))).toEqual([
+            { host: VAULT_URL, path: `${API_PATH}/sites` },
+        ]);
     });
 });

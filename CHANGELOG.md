@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `client.utilization`, a Utilization module exposing LoginEvent queries. `utilization.loginEvents.getLoginEvents(options)` returns one page as the unparsed response string, and `utilization.loginEvents.iterateLoginEvents(options)` is an async iterator yielding one unparsed page string per iteration. Both take a single options object (`startDate`, `endDate`, `take`, `cursor`, `params`) rather than positional arguments. Dates accept a `Date` or a string and are formatted from UTC parts. The parsed shape is published as the exported typedefs `LoginEvent`, `LoginEventsPage`, `LoginEventsMeta` and `LoginEventsResponse`, for casting the result of `JSON.parse`. The iterator throws the exported `StaleCursorError` when a data load invalidates the Cursor mid-walk, and never restarts the walk itself.
+- The Utilization service host is discovered after authorization from `GET /configuration/utilizationapi`. `client.utilization` is `null` when the instance reports no enabled Utilization service, or when that route does not exist, and authorization succeeds either way.
+
+### Fixed
+- `getVaultApiFromJwt` now creates NotificationsApi, so `client.notificationsApi` carries the module on a client authorized with a JWT the caller already holds. Both of its authorization paths created every other specialized API and left this one `null`, where a client from `getVaultApi` had it.
+
 ## [2.2.0-beta.1] - 2026-11-10
 
 ### Added

@@ -13,6 +13,7 @@ ResourceUri:
   ConfigurationObjectsApi: /configuration/objectsapi
   ConfigurationStudioApi: /configuration/studioapi
   ConfigurationNotificationApi: /configuration/notificationapi
+  ConfigurationUtilizationApi: /configuration/utilizationapi
   DocumentsPost: /documents
   DocumentsId: /documents/{id}
   DocumentsIdCopy: /documents/{id}/copy

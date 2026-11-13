@@ -115,6 +115,7 @@ When enabled, the following additional API modules are available:
 - **objectsApi** - Object model operations
 - **studioApi** - Workflow and studio operations
 - **notificationsApi** - Real-time notifications
+- **utilization** - LoginEvent queries, as `client.utilization`. It is `null` on an instance with no Utilization service, so check it before use.
 
 ## Error Handling
 
