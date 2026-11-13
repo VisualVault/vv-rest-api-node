@@ -45,3 +45,10 @@ nightly load runs, which ends the validity of any Cursor issued before it.
 An opaque token that marks a caller's position in a LoginEvent query. It is
 bound to both the query's date range and the DataVersion it was issued under.
 _Avoid_: Page token, offset, continuation
+
+**Stale Cursor**:
+A Cursor whose DataVersion is no longer the current one, because a load of
+Utilization data ran after it was issued. The service refuses it, and the only
+recovery is to run the query again from its first page. The library reports
+this as `StaleCursorError`.
+_Avoid_: Expired cursor, invalid cursor, cursor timeout
