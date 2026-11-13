@@ -1,4 +1,5 @@
-import vvRestApi, { Authorize, VVClient, RoleType, CompletionTarget } from 'visualvault-api';
+import vvRestApi, { Authorize, VVClient, RoleType, CompletionTarget, StaleCursorError } from 'visualvault-api';
+import type { LoginEvent, LoginEventsPage, LoginEventsResponse } from 'visualvault-api';
 import { MemberType, CompletionTarget as CompletionTargetFromConstants } from 'visualvault-api/constants';
 
 const auth: Authorize = new vvRestApi.authorize();
@@ -12,5 +13,65 @@ async function useClient(client: VVClient): Promise<void> {
     const completion: string = await client.scheduledProcess.postCompletion('run-token', 'complete', true, 'done');
     console.log(forms, variables, completion, RoleType, MemberType, auth);
 }
+
+async function useUtilization(client: VVClient): Promise<void> {
+    if (!client.utilization) {
+        return;
+    }
+
+    const raw: string = await client.utilization.loginEvents.getLoginEvents({
+        startDate: new Date('2026-03-01T00:00:00Z'),
+        endDate: '2026-03-31',
+        take: 250,
+        cursor: 'opaque-cursor',
+        params: { loginType: 'API' }
+    });
+
+    // getLoginEvents returns the response unparsed; casting the parse gives the row and envelope types.
+    const response = JSON.parse(raw) as LoginEventsResponse;
+    const status: number = response.meta.status;
+    const nextCursor: string | null | undefined = response.meta.nextCursor;
+    const page: LoginEventsPage | null = response.data;
+    const rows: LoginEvent[] = page ? page.rows : [];
+
+    for (const event of rows) {
+        const eventId: string = event.eventId;
+        const eventTime: string = event.eventTime;
+        const loginType: string = event.loginType;
+        const userDisplayName: string | null = event.userDisplayName;
+        console.log(eventId, eventTime, loginType, userDisplayName);
+    }
+
+    console.log(status, nextCursor, page?.dataVersion, page?.minEventDate);
+}
+
+void useUtilization;
+
+async function walkUtilization(client: VVClient): Promise<void> {
+    if (!client.utilization) {
+        return;
+    }
+
+    try {
+        for await (const raw of client.utilization.loginEvents.iterateLoginEvents({
+            startDate: new Date('2026-03-01T00:00:00Z'),
+            endDate: '2026-03-31',
+            take: 250,
+            params: { loginType: 'API' }
+        })) {
+            const page = JSON.parse(raw) as LoginEventsResponse;
+            const rows: LoginEvent[] = page.data ? page.data.rows : [];
+            console.log(rows.length);
+        }
+    } catch (error) {
+        if (error instanceof StaleCursorError) {
+            console.log(error.name, error.message);
+            return;
+        }
+        throw error;
+    }
+}
+
+void walkUtilization;
 
 void useClient;
