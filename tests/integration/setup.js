@@ -91,6 +91,8 @@ export function getTestConfig() {
     testNotifyUserId: process.env.VV_TEST_USER_NOTIFICATION_USER_ID  || null,
     // WorkflowManager tests (workflow operations)
     testWorkflowId: process.env.VV_TEST_WORKFLOW_ID || null,
+    // LoginEventsManager tests (Utilization LoginEvent queries)
+    testUtilizationLookbackDays: process.env.VV_TEST_UTILIZATION_LOOKBACK_DAYS || null,
   };
 }
 

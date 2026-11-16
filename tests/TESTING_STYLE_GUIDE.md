@@ -350,6 +350,23 @@ it.skipIf(skipModifyTest)('should add a security member', async () => {
 });
 ```
 
+### Conditional Skips Based on What the Server Reports
+
+`it.skipIf()` is evaluated when tests are collected, so it can only read the
+environment. When the condition is a fact the server reports after
+authentication — a specialized API the instance does not have — skip from a
+`beforeEach` instead, which runs once the `beforeAll` client exists:
+
+```javascript
+beforeEach((ctx) => {
+  ctx.skip(client.utilization === null, 'The instance reports no Utilization service.');
+});
+```
+
+The note is printed beside the skipped test, so the reason reaches whoever
+reads the run. Prefer `it.skipIf()` whenever an environment variable can
+express the condition; reach for this only when it cannot.
+
 ### Adding Configurable Test Resources
 
 When a test requires a pre-configured server resource:
