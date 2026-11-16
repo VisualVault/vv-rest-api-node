@@ -1,0 +1,24 @@
+# Text files are stored with LF in the repository and checked out with LF, so a
+# clone on any platform produces the same bytes. This overrides core.autocrlf.
+* text=auto eol=lf
+
+# Fixtures stand in for files a caller uploads, so their bytes stay as committed.
+tests/integration/_fixtures/** -text
+
+# The Windows command interpreter requires CRLF in batch files.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Listed so that adding one of these never puts it through line-ending conversion.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
