@@ -55,11 +55,15 @@ Before submitting changes:
 ## Pull Request Process
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+2. Create a feature branch from `development` (`git checkout -b feature/amazing-feature origin/development`)
 3. Make your changes
 4. Commit your changes (`git commit -m 'Add amazing feature'`)
 5. Push to the branch (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
+6. Open a Pull Request into `development`
+
+`development` is the default branch and takes all feature work. Betas publish
+from it. `main` holds only releases that passed QA, and takes only release and
+hotfix PRs. See [DEPLOYMENT.md](DEPLOYMENT.md#branch-model).
 
 ### Pull Request Guidelines
 
