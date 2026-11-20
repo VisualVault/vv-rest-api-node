@@ -61,44 +61,91 @@ This guide covers the steps needed to publish the `visualvault-api` package to N
    npm install ./visualvault-vv-rest-api-node-2.0.0.tgz
    ```
 
-### Publishing Process
+## Branch Model
 
-1. Ensure you're on the main branch and everything is committed:
+| Branch | Takes | Merge style | Publishes |
+|---|---|---|---|
+| `feature/*`, `fix/*` | your work | squash into `development` | nothing |
+| `development` | feature PRs, back-merges from `main` | | `X.Y.Z-beta.N` to dist-tag `beta`, automatically |
+| `release/X.Y.Z` | the work that passed QA | **merge commit** into `main` | nothing |
+| `hotfix/*` | an urgent fix, cut from `main` | **merge commit** into `main` | nothing |
+| `main` | release and hotfix PRs only | | `X.Y.Z` to dist-tag `latest`, by manual run |
+
+`development` is the default branch. Every feature PR targets it. `main`
+contains only work that passed QA, and changes only through a release or
+hotfix PR.
+
+`publish.yml` enforces the split. A beta version publishes only from
+`development`, and a stable version publishes only from `main`. A manual run
+from the wrong branch fails.
+
+### Beta Releases
+
+1. In the feature PR into `development`, set `package.json` to the next
+   `X.Y.Z-beta.N` and add a `[X.Y.Z-beta.N]` section to `CHANGELOG.md`.
+2. Squash-merge the PR. The push to `development` publishes the beta to the
+   `beta` dist-tag.
+
+### Stable Releases
+
+Create a `release/X.Y.Z` branch. Fill it in one of two ways.
+
+**Promote all of `development` (the normal path):**
+```bash
+git fetch origin
+git switch -c release/2.2.0 origin/development
+```
+
+**Promote only some features:**
+```bash
+git fetch origin
+git switch -c release/2.2.0 origin/main
+git cherry-pick -x <sha> <sha>   # one squashed feature PR per commit
+```
+Pick the features in the order they were merged into `development`. Make sure
+that each feature you pick does not need a feature you left out. The tests
+must pass on the release branch.
+
+Then, on the release branch:
+
+1. Set `package.json` to the stable `X.Y.Z`.
+2. In `CHANGELOG.md`, combine the beta sections into one `[X.Y.Z]` section.
+   For a selective release, list only the features you picked.
+3. Open a PR into `main`. Merge it with **Create a merge commit**, not squash.
+   A squash breaks the link between the two branches and causes conflicts in
+   the next release.
+4. Run the **Publish to npm** workflow (`workflow_dispatch`) on `main`.
+5. Tag the release:
    ```bash
-   git status
+   git fetch origin
+   git tag -a v2.2.0 -m "Release v2.2.0" origin/main
+   git push origin v2.2.0
    ```
+6. **Back-merge `main` into `development`.** Open a PR from `main` into
+   `development` and merge it with **Create a merge commit**. Do this after
+   every release and every hotfix. Without it, the next release conflicts on
+   `package.json` and `CHANGELOG.md`. The stable version this brings into
+   `development` does not publish.
 
-2. Build the package:
-   ```bash
-   npm run build
-   ```
+### Hotfixes
 
-3. Publish to NPM:
-   ```bash
-   # For initial release or major version
-   npm publish
+1. `git switch -c hotfix/2.2.1 origin/main`
+2. Fix the bug, set `package.json` to `X.Y.Z+1`, and update `CHANGELOG.md`.
+3. Open a PR into `main` and merge it with a merge commit.
+4. Publish, tag, and back-merge as in steps 4 to 6 of a stable release.
 
-   # For beta/pre-release versions
-   npm publish --tag beta
-   ```
+### Verify
 
-4. Verify the package on NPM:
-   ```bash
-   npm view visualvault-api
-   ```
-
-5. Create a Git tag for the release:
-   ```bash
-   git tag -a v2.0.0 -m "Release v2.0.0"
-   git push origin v2.0.0
-   ```
+```bash
+npm view visualvault-api dist-tags
+```
 
 ## Post-Deployment
 
 1. Create a GitHub Release:
    - Go to repository on GitHub
    - Click "Releases" → "Create a new release"
-   - Select the tag you just created
+   - Select the tag you created in step 5 of the stable release
    - Copy the CHANGELOG entry for this version
    - Publish the release
 
@@ -162,13 +209,12 @@ npm audit
 npm audit fix
 ```
 
-## Continuous Integration (Future)
+## Continuous Integration
 
-Consider setting up:
-- GitHub Actions for automated testing
-- Automated security scanning
-- Automated dependency updates (Dependabot)
-- Automated release notes generation
+- `ci.yml` runs build, lint, and integration tests on every PR into `main`,
+  `development`, `release/**`, and `hotfix/**`. The rulesets for `main` and
+  `development` require these checks.
+- `publish.yml` publishes to npm. See [Branch Model](#branch-model).
 
 ## Support
 
