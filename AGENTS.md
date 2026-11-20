@@ -1,5 +1,9 @@
 # AGENTS.md
 
+## Branches
+
+Branch from `development` and open PRs into `development`. Only `release/*` and `hotfix/*` PRs target `main`. See `DEPLOYMENT.md#branch-model`.
+
 ## Agent skills
 
 ### Issue tracker
